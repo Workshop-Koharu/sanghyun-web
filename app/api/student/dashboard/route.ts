@@ -22,14 +22,8 @@ export async function GET(req: NextRequest) {
               s.student_code as student_id,
               s.status,
               s.created_at as enrolled_at,
-              s.intro_json,
-              c.id as club_id,
-              c.name as club_name,
-              c.description as club_desc,
-              cm.role as club_role
+              s.intro_json
        FROM students s 
-       LEFT JOIN club_members cm ON s.user_id = cm.user_id
-       LEFT JOIN clubs c ON cm.club_id = c.id AND c.status IN ('recruiting', 'active')
        WHERE s.user_id = $1`,
       [userId]
     );
@@ -188,18 +182,45 @@ export async function GET(req: NextRequest) {
       );
     } catch {}
 
-    let clubMembers: any[] = [];
-    if (studentRow?.club_id) {
-      try {
-        clubMembers = await query<any>(
-          `SELECT cm.user_id, cm.role, s.nickname 
-           FROM club_members cm 
-           LEFT JOIN students s ON cm.user_id = s.user_id 
-           WHERE cm.club_id = $1 
-           ORDER BY cm.role DESC, cm.joined_at ASC`,
-          [studentRow.club_id]
-        );
-      } catch {}
+    let userClubs: any[] = [];
+    try {
+      userClubs = await query<any>(
+        `SELECT c.id, c.name, c.description, cm.role, c.status
+         FROM club_members cm
+         JOIN clubs c ON cm.club_id = c.id
+         WHERE cm.user_id = $1 AND c.status IN ('recruiting', 'active')
+         ORDER BY (cm.role = 'leader') DESC, (cm.role = 'vice_leader') DESC, cm.joined_at ASC
+         LIMIT 5`,
+        [userId]
+      );
+    } catch {}
+
+    const clubsWithMembers = await Promise.all(
+      userClubs.map(async (cl: any) => {
+        let members: any[] = [];
+        try {
+          members = await query<any>(
+            `SELECT cm.user_id, cm.role, s.nickname 
+             FROM club_members cm 
+             LEFT JOIN students s ON cm.user_id = s.user_id 
+             WHERE cm.club_id = $1 
+             ORDER BY cm.role DESC, cm.joined_at ASC`,
+            [cl.id]
+          );
+        } catch {}
+        return {
+          id: cl.id,
+          name: cl.name,
+          description: cl.description,
+          role: cl.role,
+          status: cl.status,
+          members,
+        };
+      })
+    );
+
+    if (student) {
+      student.club_name = userClubs.map((c: any) => c.name).join(', ') || null;
     }
 
     // 273. 오늘의 질문 (Today's Question)
@@ -270,15 +291,8 @@ export async function GET(req: NextRequest) {
       announcements,
       todayQuestion,
       leaderboard,
-      club: studentRow?.club_id
-        ? {
-            id: studentRow.club_id,
-            name: studentRow.club_name,
-            description: studentRow.club_desc,
-            role: studentRow.club_role,
-            members: clubMembers,
-          }
-        : null,
+      clubs: clubsWithMembers,
+      club: clubsWithMembers[0] || null,
     });
   } catch (error: any) {
     console.error('Student dashboard error:', error);

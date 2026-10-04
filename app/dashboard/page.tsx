@@ -9,6 +9,7 @@ import AchievementsGrid from '@/components/AchievementsGrid';
 import BellScheduleWidget from '@/components/BellScheduleWidget';
 import SuggestionsBoard from '@/components/SuggestionsBoard';
 import TimetableWidget from '@/components/TimetableWidget';
+import MealPhotoFeedWidget from '@/components/MealPhotoFeedWidget';
 import {
   BookOpen,
   CalendarCheck,
@@ -26,11 +27,12 @@ import {
   Award,
   Calendar,
   MessageSquarePlus,
+  Utensils,
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
+    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'meals' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
   >('card');
   const [data, setData] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
@@ -244,6 +246,17 @@ export default function DashboardPage() {
             동아리
           </button>
           <button
+            onClick={() => setActiveTab('meals')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'meals'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Utensils className="w-3.5 h-3.5 text-amber-500" />
+            급식피드
+          </button>
+          <button
             onClick={() => setActiveTab('suggestions')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'suggestions'
@@ -398,45 +411,66 @@ export default function DashboardPage() {
         )}
 
         {/* 211. 웹앱 동아리 포털 페이지 */}
+        {/* 211. 웹앱 동아리 포털 페이지 (최대 5개 동시 가입 지원) */}
         {activeTab === 'club' && (
           <div className="space-y-5">
-            {data?.club ? (
-              <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase text-blue-600 dark:text-blue-400 font-bold block">
+            {((data?.clubs && data.clubs.length > 0) || data?.club) ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono uppercase bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold px-2 py-0.5 rounded">
                       CLUB PORTAL
                     </span>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                      {data.club.name}
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 font-medium">
-                        {data.club.role === 'leader' ? '동아리 부장' : data.club.role === 'vice_leader' ? '부부장' : '부원'}
-                      </span>
-                    </h2>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      내 동아리 ({(data.clubs?.length || 1)}/5개)
+                    </span>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {data.club.description || '동아리 소개가 등록되어 있지 않습니다.'}
-                </p>
-
-                <div className="pt-2">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2">
-                    소속 부원 명단 ({data.club.members?.length || 0}명)
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {data.club.members?.map((m: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between text-xs"
-                      >
-                        <span className="font-semibold text-slate-900 dark:text-white">{m.nickname || `학생 ${m.user_id}`}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
-                          {m.role === 'leader' ? '👑 부장' : m.role === 'vice_leader' ? '⭐ 부부장' : '부원'}
+                <div className="grid grid-cols-1 gap-5">
+                  {(data.clubs || [data.club]).map((c: any, cIdx: number) => (
+                    <div
+                      key={c.id || cIdx}
+                      className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4"
+                    >
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div>
+                          <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            {c.name}
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 font-medium">
+                              {c.role === 'leader' ? '👑 동아리 부장' : c.role === 'vice_leader' ? '⭐ 부부장' : '부원'}
+                            </span>
+                          </h2>
+                        </div>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          {c.status === 'active' ? '🟢 정식 활동 중' : '🟡 부원 모집 중'}
                         </span>
                       </div>
-                    ))}
-                  </div>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        {c.description || '동아리 소개가 등록되어 있지 않습니다.'}
+                      </p>
+
+                      <div className="pt-2">
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2">
+                          소속 부원 명단 ({c.members?.length || 0}명)
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {c.members?.map((m: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between text-xs"
+                            >
+                              <span className="font-semibold text-slate-900 dark:text-white">{m.nickname || `학생 ${m.user_id}`}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+                                {m.role === 'leader' ? '👑 부장' : m.role === 'vice_leader' ? '⭐ 부부장' : '부원'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : (
@@ -444,11 +478,16 @@ export default function DashboardPage() {
                 <Users2 className="w-8 h-8 text-slate-400 mx-auto" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">가입된 동아리가 없습니다</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  디스코드에서 <code className="text-blue-600 font-mono">/동아리 목록</code> 및 <code className="text-blue-600 font-mono">/동아리 가입</code> 명령어로 동아리에 가입해 보세요.
+                  디스코드에서 <code className="text-blue-600 font-mono">/동아리 목록</code> 및 <code className="text-blue-600 font-mono">/동아리 가입</code> 명령어로 최대 5개까지 동아리에 가입해 보세요.
                 </p>
               </div>
             )}
           </div>
+        )}
+
+        {/* 453. 실시간 급식 메뉴 사진 피드 */}
+        {activeTab === 'meals' && (
+          <MealPhotoFeedWidget />
         )}
 
         {/* 1. 웹앱 학교 공식 공지사항 */}
