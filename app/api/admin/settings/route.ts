@@ -33,7 +33,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   'discipline.penalty_limit': '10',
   'school.vacation_mode': 'false',
   'school.motto': '지혜를 닦고 덕성을 길러 세계를 밝히자',
-  'class.count': '5',
+  'class.count': '10',
   'grade.promotion_months': '4',
   'grade.max_grade': '3',
   'question.hour': '9',

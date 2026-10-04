@@ -1617,7 +1617,7 @@ export default function AdminPage() {
                   type="number"
                   min="1"
                   max="20"
-                  value={settings['class.count'] || settings['max_classes'] || '5'}
+                  value={settings['class.count'] || settings['max_classes'] || '10'}
                   onChange={(e) => setSettings({ ...settings, 'class.count': e.target.value, max_classes: e.target.value })}
                   className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
                 />

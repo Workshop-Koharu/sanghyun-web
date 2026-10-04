@@ -205,14 +205,14 @@ export default function TimetableWidget() {
           </div>
 
           {/* Class Selector */}
-          <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 text-xs font-semibold">
-            {[1, 2, 3, 4, 5].map((c) => (
+          <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 text-xs font-semibold overflow-x-auto max-w-[280px] sm:max-w-none scrollbar-none">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((c) => (
               <button
                 key={c}
                 onClick={() => setClassNum(c)}
-                className={`w-7 py-1 rounded-lg transition-all text-center ${
+                className={`min-w-6 sm:w-7 py-1 px-1 rounded-lg transition-all text-center text-[11px] sm:text-xs shrink-0 ${
                   classNum === c
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-indigo-600 text-white shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
