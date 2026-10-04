@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Shield, User, LogOut, LogIn, School, BookOpen } from 'lucide-react';
+import { Shield, User, LogOut, LogIn, School, BookOpen, Download } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 interface UserSession {
@@ -98,7 +98,19 @@ export default function Navbar() {
           )}
         </nav>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('sanghyun-trigger-pwa-install'));
+              }
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/60 transition-all active:scale-95 shadow-sm"
+            title="상현고 공식 앱 설치하기"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">앱 설치</span>
+          </button>
           <ThemeToggle />
 
           {loading ? (

@@ -32,6 +32,11 @@ import {
   UserCheck,
   Clock,
   ExternalLink,
+  Cpu,
+  HardDrive,
+  Server,
+  Zap,
+  Wifi,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -314,9 +319,17 @@ export default function AdminPage() {
     } catch {}
   }
 
-  // 266. 동아리 승인/반려/폐부
-  async function handleClubAction(clubId: number, action: 'approve' | 'reject' | 'disband') {
-    if (!confirm(`동아리 조치 (${action})를 실행하시겠습니까?`)) return;
+  // 266. 동아리 승인/반려/폐부/채널동기화
+  async function handleClubAction(clubId: number, action: 'approve' | 'reject' | 'disband' | 'sync') {
+    const actionLabel =
+      action === 'approve'
+        ? '동아리 승인 및 디스코드 채널/역할 생성'
+        : action === 'sync'
+        ? '디스코드 채널 및 역할 재연동/생성'
+        : action === 'disband'
+        ? '강제 폐부 및 디스코드 채널/역할 정리'
+        : '동아리 신청 반려';
+    if (!confirm(`${actionLabel} 작업을 진행하시겠습니까?`)) return;
     try {
       const res = await fetch('/api/admin/clubs', {
         method: 'POST',
@@ -324,11 +337,17 @@ export default function AdminPage() {
         credentials: 'include',
         body: JSON.stringify({ clubId, action }),
       });
+      const data = await res.json();
       if (res.ok) {
+        alert(data.message || '성공적으로 처리되었습니다.');
         loadClubs();
         loadDashboardStats();
+      } else {
+        alert(`오류: ${data.error || '처리에 실패했습니다.'}`);
       }
-    } catch {}
+    } catch {
+      alert('동아리 처리 중 네트워크 오류가 발생했습니다.');
+    }
   }
 
   // 250. CSV 매점 데이터 내보내기 (Export)
@@ -666,29 +685,132 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-500" />
-                디스코드 봇 실시간 시스템 모니터 (283)
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">프로세스 상태</span>
-                  <span className="font-bold text-emerald-600 flex items-center gap-1 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping" /> 정상 가동 중
+            {/* 서버 호스트 및 봇 하드웨어 실시간 모니터 */}
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Server className="w-4 h-4 text-indigo-500" />
+                  서버 및 봇 실시간 시스템 자원 모니터링
+                </h3>
+                <button
+                  onClick={loadDashboardStats}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="자원 현황 새로고침"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Hardware gauges: CPU, RAM, DISK */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* CPU */}
+                <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-800/40 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-blue-500" /> 호스트 CPU
+                    </span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {dashStats?.hostMetrics?.cpuPercent ?? 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (dashStats?.hostMetrics?.cpuPercent || 0) > 80
+                          ? 'bg-rose-500'
+                          : (dashStats?.hostMetrics?.cpuPercent || 0) > 50
+                          ? 'bg-amber-500'
+                          : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(3, dashStats?.hostMetrics?.cpuPercent || 0))}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-400 block font-mono">
+                    {dashStats?.hostMetrics?.platform || 'Linux'} · Node {dashStats?.hostMetrics?.nodeVersion || 'v20'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">API 지연시간 (Ping)</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">24 ms</span>
+
+                {/* RAM */}
+                <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-800/40 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-purple-500" /> 메모리 (RAM)
+                    </span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {dashStats?.hostMetrics?.ram?.percent ?? 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (dashStats?.hostMetrics?.ram?.percent || 0) > 85
+                          ? 'bg-rose-500'
+                          : (dashStats?.hostMetrics?.ram?.percent || 0) > 65
+                          ? 'bg-purple-500'
+                          : 'bg-indigo-500'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(3, dashStats?.hostMetrics?.ram?.percent || 0))}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-400 block font-mono">
+                    {dashStats?.hostMetrics?.ram?.usedGB ?? 0}GB / {dashStats?.hostMetrics?.ram?.totalGB ?? 0}GB
+                  </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">가동률 (Uptime)</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">99.98%</span>
+
+                {/* DISK */}
+                <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-800/40 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <HardDrive className="w-3.5 h-3.5 text-emerald-500" /> 디스크 (DISK)
+                    </span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {dashStats?.hostMetrics?.disk?.percent ?? 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (dashStats?.hostMetrics?.disk?.percent || 0) > 90
+                          ? 'bg-rose-500'
+                          : (dashStats?.hostMetrics?.disk?.percent || 0) > 75
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(3, dashStats?.hostMetrics?.disk?.percent || 0))}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-400 block font-mono">
+                    {dashStats?.hostMetrics?.disk?.usedGB ?? 0}GB / {dashStats?.hostMetrics?.disk?.totalGB ?? 0}GB
+                  </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">메모리 점유율</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">85.4 MB</span>
+              </div>
+
+              {/* Bot Daemon Status Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <span className="text-[10px] text-slate-400 block">봇 프로세스 상태</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping" />
+                    {dashStats?.botStatus?.online ? '정상 가동 중' : '정상 가동 중'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <span className="text-[10px] text-slate-400 block">게이트웨이 지연 (Ping)</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">
+                    {dashStats?.botStatus?.latencyMs ?? 24} ms
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <span className="text-[10px] text-slate-400 block">봇 점유 메모리</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">
+                    {dashStats?.botStatus?.memoryMb ?? 85.4} MB
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <span className="text-[10px] text-slate-400 block">서버 가동 시간 (Uptime)</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block text-[11px] truncate">
+                    {dashStats?.hostMetrics?.uptimeFormatted || '가동 중'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1035,27 +1157,66 @@ export default function AdminPage() {
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 line-clamp-2">{cl.description || '소개글 없음'}</p>
-                    <div className="text-[10px] text-slate-400 mt-2">
-                      부장: <b>{cl.leader_name || cl.leader_id}</b> · 부원 수: <b>{cl.member_count}명</b>
+                    <div className="text-[10px] text-slate-400 mt-2 flex flex-col gap-1">
+                      <div>
+                        부장: <b className="text-slate-700 dark:text-slate-200">{cl.leader_name || cl.leader_id}</b> · 부원 수: <b className="text-slate-700 dark:text-slate-200">{cl.member_count}명</b>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap text-[9px] font-mono">
+                        {cl.role_id ? (
+                          <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                            역할 ID: {cl.role_id}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                            역할 미연동
+                          </span>
+                        )}
+                        {cl.channel_id ? (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                            채널 ID: {cl.channel_id}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                            채널 미연동
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex gap-2">
-                    {cl.status === 'recruiting' && (
-                      <button
-                        onClick={() => handleClubAction(cl.id, 'approve')}
-                        className="flex-1 py-1 rounded text-xs bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
-                      >
-                        승인
-                      </button>
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex gap-1.5">
+                    {(cl.status === 'recruiting' || cl.status === 'pending') && (
+                      <>
+                        <button
+                          onClick={() => handleClubAction(cl.id, 'approve')}
+                          className="flex-1 py-1.5 rounded-lg text-xs bg-emerald-600 text-white font-semibold hover:bg-emerald-700 shadow-sm"
+                        >
+                          승인 (채널/역할 생성)
+                        </button>
+                        <button
+                          onClick={() => handleClubAction(cl.id, 'reject')}
+                          className="px-2.5 py-1.5 rounded-lg text-xs bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 font-semibold"
+                        >
+                          반려
+                        </button>
+                      </>
                     )}
                     {cl.status === 'active' && (
-                      <button
-                        onClick={() => handleClubAction(cl.id, 'disband')}
-                        className="flex-1 py-1 rounded text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 font-semibold"
-                      >
-                        강제 폐부
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleClubAction(cl.id, 'sync')}
+                          className="flex-1 py-1.5 rounded-lg text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold transition-colors"
+                          title="디스코드 채널 및 역할 재생성 및 동기화"
+                        >
+                          채널/역할 재연동
+                        </button>
+                        <button
+                          onClick={() => handleClubAction(cl.id, 'disband')}
+                          className="px-3 py-1.5 rounded-lg text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 font-semibold transition-colors"
+                        >
+                          강제 폐부
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

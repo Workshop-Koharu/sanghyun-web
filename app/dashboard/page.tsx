@@ -6,6 +6,9 @@ import AttendanceCalendar from '@/components/AttendanceCalendar';
 import WalletView from '@/components/WalletView';
 import DisciplineView from '@/components/DisciplineView';
 import AchievementsGrid from '@/components/AchievementsGrid';
+import BellScheduleWidget from '@/components/BellScheduleWidget';
+import SuggestionsBoard from '@/components/SuggestionsBoard';
+import TimetableWidget from '@/components/TimetableWidget';
 import {
   BookOpen,
   CalendarCheck,
@@ -21,10 +24,14 @@ import {
   Save,
   HelpCircle,
   Award,
+  Calendar,
+  MessageSquarePlus,
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'card' | 'attendance' | 'wallet' | 'club' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'>('card');
+  const [activeTab, setActiveTab] = useState<
+    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
+  >('card');
   const [data, setData] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -193,6 +200,17 @@ export default function DashboardPage() {
             학생증
           </button>
           <button
+            onClick={() => setActiveTab('timetable')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'timetable'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            시간표
+          </button>
+          <button
             onClick={() => setActiveTab('attendance')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'attendance'
@@ -224,6 +242,17 @@ export default function DashboardPage() {
           >
             <Users2 className="w-3.5 h-3.5" />
             동아리
+          </button>
+          <button
+            onClick={() => setActiveTab('suggestions')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'suggestions'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <MessageSquarePlus className="w-3.5 h-3.5" />
+            학생건의
           </button>
           <button
             onClick={() => setActiveTab('notices')}
@@ -312,25 +341,33 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 오늘의 급식 메뉴 위젯 */}
-      <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg shrink-0">
-            🍱
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">오늘의 상현고 중식 식단</span>
-              <span className="text-[10px] font-mono text-slate-400 font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800">728 kcal</span>
+      {/* 실시간 타종 시정표 & 오늘의 급식 메뉴 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <BellScheduleWidget />
+        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg shrink-0">
+              🍱
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-              기장밥 · 얼큰소고기무국 · 수제등심돈까스 & 소스 · 콘치즈오븐구이 · 깍두기 · 유기농 사과주스
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">오늘의 상현고 중식 식단</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800">
+                  728 kcal
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+                기장밥 · 얼큰소고기무국 · 수제등심돈까스 & 소스 · 콘치즈오븐구이 · 깍두기 · 유기농 사과주스
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
+            <span>식생활관 직영 위생 조리</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+              영양사 검수 완료
+            </span>
           </div>
         </div>
-        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-full whitespace-nowrap self-start sm:self-center">
-          영양사 검수 완료
-        </span>
       </div>
 
       {/* Main Tab Content */}
@@ -593,6 +630,10 @@ export default function DashboardPage() {
             logs={data?.disciplineLogs || []}
           />
         )}
+
+        {activeTab === 'timetable' && <TimetableWidget />}
+
+        {activeTab === 'suggestions' && <SuggestionsBoard />}
 
         {activeTab === 'achievements' && (
           <AchievementsGrid

@@ -1,16 +1,56 @@
 {
+  "id": "/?source=pwa",
   "name": "상현고등학교 스마트 학사 포털",
   "short_name": "상현고",
   "description": "상현고등학교 공식 스마트 학생증 및 학사 운영 포털",
   "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0F172A",
   "theme_color": "#4F6BED",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "스마트 학생증",
+      "short_name": "학생증",
+      "description": "내 모바일 학생증 및 바코드 확인",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "교무실 관리자",
+      "short_name": "교무실",
+      "description": "상현고 교무실 관리 패널",
+      "url": "/admin",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
