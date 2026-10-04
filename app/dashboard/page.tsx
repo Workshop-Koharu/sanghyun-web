@@ -19,10 +19,12 @@ import {
   Sparkles,
   Edit3,
   Save,
+  HelpCircle,
+  Award,
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'card' | 'attendance' | 'wallet' | 'club' | 'notices' | 'discipline' | 'achievements'>('card');
+  const [activeTab, setActiveTab] = useState<'card' | 'attendance' | 'wallet' | 'club' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'>('card');
   const [data, setData] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -235,6 +237,17 @@ export default function DashboardPage() {
             학교공지
           </button>
           <button
+            onClick={() => setActiveTab('leaderboard')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'leaderboard'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            명예의전당
+          </button>
+          <button
             onClick={() => setActiveTab('discipline')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'discipline'
@@ -253,10 +266,71 @@ export default function DashboardPage() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Trophy className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5" />
             업적
           </button>
         </div>
+      </div>
+
+      {/* 273. 오늘의 질문 (Today's Daily Question) Card */}
+      {data?.todayQuestion && (
+        <div className="p-4 sm:p-5 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-purple-50/80 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white font-mono">
+                오늘의 질문
+              </span>
+              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-semibold">
+                {data.todayQuestion.date}
+              </span>
+              {data.todayQuestion.public_message_id ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold">
+                  디스코드 게시 완료
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold">
+                  출제 대기
+                </span>
+              )}
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+              {data.todayQuestion.question}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              디스코드 상현고 공식 채널에서 다른 학생들의 다양한 의견을 나누고 투표에 참여해 보세요!
+            </p>
+          </div>
+          <a
+            href="https://discord.com/channels/1528353970714841110"
+            target="_blank"
+            rel="noreferrer"
+            className="self-start sm:self-center px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold whitespace-nowrap shadow transition-colors flex items-center gap-1.5"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            디스코드에서 의견 남기기
+          </a>
+        </div>
+      )}
+
+      {/* 오늘의 급식 메뉴 위젯 */}
+      <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg shrink-0">
+            🍱
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">오늘의 상현고 중식 식단</span>
+              <span className="text-[10px] font-mono text-slate-400 font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800">728 kcal</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+              기장밥 · 얼큰소고기무국 · 수제등심돈까스 & 소스 · 콘치즈오븐구이 · 깍두기 · 유기농 사과주스
+            </p>
+          </div>
+        </div>
+        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-full whitespace-nowrap self-start sm:self-center">
+          영양사 검수 완료
+        </span>
       </div>
 
       {/* Main Tab Content */}
@@ -391,6 +465,125 @@ export default function DashboardPage() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* 274. 전교생 명예의 전당 (Leaderboard) */}
+        {activeTab === 'leaderboard' && (
+          <div className="space-y-6">
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+              <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-500" />
+                상현고등학교 전교생 명예의 전당 (실시간 랭킹)
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                성실히 학교 생활과 디스코드 활동에 참여한 학생들의 경험치, 보유 자산, 출석 스트릭 랭킹입니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* TOP 5 EXP */}
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 border-l-2 border-blue-600 pl-2">
+                  <Award className="w-3.5 h-3.5 text-blue-600" />
+                  경험치 & 학업 레벨 TOP 5
+                </h3>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {(!data?.leaderboard?.topExp || data.leaderboard.topExp.length === 0) ? (
+                    <p className="py-4 text-center text-slate-400 text-xs">재학생 데이터 집계 중</p>
+                  ) : (
+                    data.leaderboard.topExp.map((st: any, idx: number) => (
+                      <div key={st.user_id} className="py-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-5 text-center font-black ${
+                              idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-500'
+                            }`}
+                          >
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white">{st.real_name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono ml-1.5">({st.student_id})</span>
+                          </div>
+                        </div>
+                        <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                          Lv.{st.level} ({st.total_exp?.toLocaleString()} XP)
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* TOP 5 COINS */}
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 border-l-2 border-amber-500 pl-2">
+                  <Wallet className="w-3.5 h-3.5 text-amber-500" />
+                  교내 자산 (지갑+예금) TOP 5
+                </h3>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {(!data?.leaderboard?.topCoins || data.leaderboard.topCoins.length === 0) ? (
+                    <p className="py-4 text-center text-slate-400 text-xs">자산 데이터 집계 중</p>
+                  ) : (
+                    data.leaderboard.topCoins.map((st: any, idx: number) => (
+                      <div key={st.user_id} className="py-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-5 text-center font-black ${
+                              idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-500'
+                            }`}
+                          >
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white">{st.real_name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono ml-1.5">({st.student_id})</span>
+                          </div>
+                        </div>
+                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                          {Number(st.total_coins)?.toLocaleString()} 코인
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* TOP 5 ATTENDANCE STREAK */}
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 border-l-2 border-emerald-500 pl-2">
+                  <CalendarCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  최장 연속 등교 스트릭 TOP 5
+                </h3>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {(!data?.leaderboard?.topStreak || data.leaderboard.topStreak.length === 0) ? (
+                    <p className="py-4 text-center text-slate-400 text-xs">출석 데이터 집계 중</p>
+                  ) : (
+                    data.leaderboard.topStreak.map((st: any, idx: number) => (
+                      <div key={st.user_id} className="py-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-5 text-center font-black ${
+                              idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-500'
+                            }`}
+                          >
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white">{st.real_name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono ml-1.5">({st.student_id})</span>
+                          </div>
+                        </div>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          {st.max_streak}일 연속
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

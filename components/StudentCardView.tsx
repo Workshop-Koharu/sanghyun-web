@@ -51,6 +51,146 @@ interface StudentProps {
   }>;
 }
 
+// Realistic Code 128 Style SVG Barcode Generator
+function RealisticBarcode({ value }: { value: string }) {
+  const clean = (value || 'SH2026001').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  const bars: { width: number; isBlack: boolean }[] = [];
+
+  // Quiet zone
+  bars.push({ width: 3, isBlack: false });
+  // Start pattern: B2 S1 B1 S2 B1 S3
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 1, isBlack: false });
+  bars.push({ width: 1, isBlack: true });
+  bars.push({ width: 2, isBlack: false });
+  bars.push({ width: 1, isBlack: true });
+  bars.push({ width: 2, isBlack: false });
+
+  // Data characters
+  for (let i = 0; i < clean.length; i++) {
+    const code = clean.charCodeAt(i);
+    const p1 = (code % 3) + 1;
+    const p2 = ((code >> 1) % 3) + 1;
+    const p3 = ((code >> 2) % 2) + 1;
+    const p4 = ((code >> 3) % 3) + 1;
+    const p5 = ((code >> 4) % 2) + 1;
+    const p6 = Math.max(1, 11 - (p1 + p2 + p3 + p4 + p5));
+
+    bars.push({ width: p1, isBlack: true });
+    bars.push({ width: p2, isBlack: false });
+    bars.push({ width: p3, isBlack: true });
+    bars.push({ width: p4, isBlack: false });
+    bars.push({ width: p5, isBlack: true });
+    bars.push({ width: p6, isBlack: false });
+  }
+
+  // Stop pattern: B2 S3 B3 S1 B1 S1 B2
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 2, isBlack: false });
+  bars.push({ width: 3, isBlack: true });
+  bars.push({ width: 1, isBlack: false });
+  bars.push({ width: 1, isBlack: true });
+  bars.push({ width: 1, isBlack: false });
+  bars.push({ width: 2, isBlack: true });
+  bars.push({ width: 3, isBlack: false });
+
+  const totalWidth = bars.reduce((sum, b) => sum + b.width, 0);
+
+  return (
+    <div className="bg-white rounded-md px-2 py-1 flex flex-col items-center shadow-inner">
+      <svg
+        viewBox={`0 0 ${totalWidth} 22`}
+        className="w-32 sm:w-40 h-6 fill-current text-slate-950"
+        preserveAspectRatio="none"
+      >
+        {(() => {
+          let currentX = 0;
+          return bars.map((bar, idx) => {
+            const x = currentX;
+            currentX += bar.width;
+            if (!bar.isBlack) return null;
+            return <rect key={idx} x={x} y={0} width={bar.width} height={22} fill="#090D16" />;
+          });
+        })()}
+      </svg>
+      <span className="font-mono text-[8px] font-bold text-slate-800 tracking-wider">
+        *{clean}*
+      </span>
+    </div>
+  );
+}
+
+// Realistic 21x21 QR Code SVG Matrix Generator
+function RealisticQRCode({ value, size = 52 }: { value: string; size?: number }) {
+  const N = 21;
+  const matrix: boolean[][] = Array.from({ length: N }, () => Array(N).fill(false));
+
+  function placeFinder(row: number, col: number) {
+    for (let r = -1; r <= 7; r++) {
+      for (let c = -1; c <= 7; c++) {
+        const mr = row + r;
+        const mc = col + c;
+        if (mr >= 0 && mr < N && mc >= 0 && mc < N) {
+          if (r === -1 || r === 7 || c === -1 || c === 7) {
+            matrix[mr][mc] = false;
+          } else if (r === 0 || r === 6 || c === 0 || c === 6) {
+            matrix[mr][mc] = true;
+          } else if (r >= 2 && r <= 4 && c >= 2 && c <= 4) {
+            matrix[mr][mc] = true;
+          } else {
+            matrix[mr][mc] = false;
+          }
+        }
+      }
+    }
+  }
+
+  placeFinder(0, 0);
+  placeFinder(0, N - 7);
+  placeFinder(N - 7, 0);
+
+  for (let i = 8; i < N - 8; i++) {
+    matrix[6][i] = i % 2 === 0;
+    matrix[i][6] = i % 2 === 0;
+  }
+
+  matrix[N - 8][8] = true;
+
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const inTL = r <= 7 && c <= 7;
+      const inTR = r <= 7 && c >= N - 8;
+      const inBL = r >= N - 8 && c <= 7;
+      const inTiming = (r === 6 && c >= 8 && c < N - 8) || (c === 6 && r >= 8 && r < N - 8);
+      const isDarkModule = r === N - 8 && c === 8;
+
+      if (!inTL && !inTR && !inBL && !inTiming && !isDarkModule) {
+        const bit = ((hash ^ (r * 37 + c * 17) ^ ((r + c) % 3 === 0 ? 1 : 0)) >>> ((r * 3 + c) % 29)) & 1;
+        matrix[r][c] = bit === 1;
+      }
+    }
+  }
+
+  return (
+    <div className="bg-white p-1 rounded-md shadow flex items-center justify-center shrink-0">
+      <svg viewBox={`0 0 ${N} ${N}`} width={size} height={size} className="shape-rendering-crispEdges">
+        {matrix.map((row, r) =>
+          row.map((isDark, c) =>
+            isDark ? (
+              <rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#090D16" />
+            ) : null
+          )
+        )}
+      </svg>
+    </div>
+  );
+}
+
 export default function StudentCardView({ student, level, user, history = [] }: StudentProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -135,7 +275,7 @@ export default function StudentCardView({ student, level, user, history = [] }: 
                   </div>
                   <div>
                     <span className="text-[10px] tracking-widest uppercase font-mono text-blue-400 font-bold block">
-                      SANGHYEON HIGH SCHOOL
+                      SANGHYUN HIGH SCHOOL
                     </span>
                     <h2 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
                       상현고등학교 학생증
@@ -238,18 +378,13 @@ export default function StudentCardView({ student, level, user, history = [] }: 
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-12 h-12 bg-white rounded-lg p-1 flex items-center justify-center">
-                    <QrCode className="w-full h-full text-slate-900" />
-                  </div>
-                  <div className="font-mono text-[10px] text-slate-400">
-                    <div className="tracking-widest">||| | |||| | ||||| | ||</div>
-                    <span className="text-slate-300 font-semibold">{student.student_id}</span>
-                  </div>
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <RealisticQRCode value={`https://sanghyun.koharu.live/student/${student.user_id}`} size={46} />
+                  <RealisticBarcode value={student.student_id} />
                 </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <RotateCw className="w-3 h-3 text-blue-400" /> 앞면으로
+                <div className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
+                  <RotateCw className="w-3 h-3 text-blue-400" /> 앞면
                 </div>
               </div>
             </div>

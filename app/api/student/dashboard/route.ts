@@ -202,6 +202,58 @@ export async function GET(req: NextRequest) {
       } catch {}
     }
 
+    // 273. 오늘의 질문 (Today's Question)
+    let todayQuestion: any = null;
+    try {
+      const todayKST = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+      todayQuestion = await queryOne<any>(
+        `SELECT date, question_text as question, author_id, public_message_id, created_at 
+         FROM daily_questions 
+         WHERE date = $1`,
+        [todayKST]
+      );
+      if (!todayQuestion) {
+        todayQuestion = await queryOne<any>(
+          `SELECT date, question_text as question, author_id, public_message_id, created_at 
+           FROM daily_questions 
+           ORDER BY date DESC 
+           LIMIT 1`
+        );
+      }
+    } catch {}
+
+    // 274. 전교생 랭킹 (Leaderboards)
+    let leaderboard = { topExp: [], topCoins: [], topStreak: [] };
+    try {
+      const topExp = await query<any>(
+        `SELECT s.user_id, s.real_name, s.student_id, l.level, l.total_exp 
+         FROM levels l 
+         JOIN students s ON l.user_id = s.user_id 
+         WHERE s.status = 'active'
+         ORDER BY l.total_exp DESC, l.level DESC 
+         LIMIT 5`
+      );
+      const topCoins = await query<any>(
+        `SELECT s.user_id, s.real_name, s.student_id, (COALESCE(w.balance, 0) + COALESCE(b.deposit_balance, 0)) as total_coins 
+         FROM students s
+         LEFT JOIN wallets w ON s.user_id = w.user_id 
+         LEFT JOIN bank_accounts b ON s.user_id = b.user_id 
+         WHERE s.status = 'active'
+         ORDER BY total_coins DESC 
+         LIMIT 5`
+      );
+      const topStreak = await query<any>(
+        `SELECT s.user_id, s.real_name, s.student_id, MAX(a.streak) as max_streak 
+         FROM attendance a 
+         JOIN students s ON a.user_id = s.user_id 
+         WHERE s.status = 'active'
+         GROUP BY s.user_id, s.real_name, s.student_id 
+         ORDER BY max_streak DESC 
+         LIMIT 5`
+      );
+      leaderboard = { topExp: topExp as any, topCoins: topCoins as any, topStreak: topStreak as any };
+    } catch {}
+
     return NextResponse.json({
       student,
       wallet: walletRow,
@@ -216,6 +268,8 @@ export async function GET(req: NextRequest) {
       studentHistory,
       transactions,
       announcements,
+      todayQuestion,
+      leaderboard,
       club: studentRow?.club_id
         ? {
             id: studentRow.club_id,

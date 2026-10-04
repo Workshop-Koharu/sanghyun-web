@@ -348,6 +348,160 @@ export default function AdminPage() {
     document.body.removeChild(link);
   }
 
+  // 매점 아이템 신규 등록
+  async function handleAddShopItem(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newItemName || !newItemPrice) return;
+    try {
+      const res = await fetch('/api/admin/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: newItemName,
+          description: newItemDesc,
+          price: parseInt(newItemPrice, 10),
+          stock: parseInt(newItemStock, 10),
+          item_type: newItemType,
+        }),
+      });
+      if (res.ok) {
+        setIsAddShopModalOpen(false);
+        setNewItemName('');
+        setNewItemDesc('');
+        setNewItemPrice('100');
+        setNewItemStock('-1');
+        setNewItemType('general');
+        loadShopItems();
+      } else {
+        const err = await res.json();
+        alert(err.error || '아이템 등록에 실패했습니다.');
+      }
+    } catch {
+      alert('아이템 등록 중 네트워크 오류가 발생했습니다.');
+    }
+  }
+
+  // 매점 아이템 판매 상태 토글
+  async function handleToggleShopItem(item: any) {
+    try {
+      const res = await fetch('/api/admin/shop', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: item.id,
+          is_active: item.is_active === 1 ? 0 : 1,
+        }),
+      });
+      if (res.ok) {
+        loadShopItems();
+      }
+    } catch {}
+  }
+
+  // 매점 아이템 삭제
+  async function handleDeleteShopItem(itemId: number, itemName: string) {
+    if (!confirm(`'${itemName}' 아이템을 매점에서 삭제하시겠습니까?`)) return;
+    try {
+      const res = await fetch(`/api/admin/shop?id=${itemId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        loadShopItems();
+      } else {
+        const err = await res.json();
+        alert(err.error || '삭제 실패');
+      }
+    } catch {}
+  }
+
+  // 오늘의 질문 등록
+  async function handleAddQuestion(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newQDate || !newQText) return;
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ date: newQDate, question: newQText }),
+      });
+      if (res.ok) {
+        setNewQText('');
+        loadQuestions();
+        alert(`[${newQDate}] 오늘의 질문이 등록되었습니다.`);
+      } else {
+        const err = await res.json();
+        alert(err.error || '질문 등록 실패');
+      }
+    } catch {
+      alert('질문 등록 중 네트워크 오류가 발생했습니다.');
+    }
+  }
+
+  // 오늘의 질문 디스코드 전송
+  async function handlePublishQuestion(date: string) {
+    if (!confirm(`[${date}] 오늘의 질문을 디스코드 공식 채널로 전송하시겠습니까?`)) return;
+    try {
+      const res = await fetch('/api/admin/questions/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ date }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('디스코드 채널에 성공적으로 전송되었습니다!');
+        loadQuestions();
+      } else {
+        alert(`전송 실패: ${data.error}`);
+      }
+    } catch {
+      alert('질문 전송 중 네트워크 오류가 발생했습니다.');
+    }
+  }
+
+  // 오늘의 질문 삭제
+  async function handleDeleteQuestion(date: string) {
+    if (!confirm(`[${date}] 등록된 오늘의 질문을 삭제하시겠습니까?`)) return;
+    try {
+      const res = await fetch(`/api/admin/questions?date=${date}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        loadQuestions();
+      }
+    } catch {}
+  }
+
+  // 학교 설정 일괄 저장
+  async function handleSaveSettings(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    setSettingsSaving(true);
+    setSettingsMsg(null);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ settings }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSettingsMsg('모든 학교 및 시스템 설정이 성공적으로 저장되었습니다.');
+        setTimeout(() => setSettingsMsg(null), 4000);
+      } else {
+        setSettingsMsg(`저장 실패: ${data.error}`);
+      }
+    } catch {
+      setSettingsMsg('설정 저장 중 오류가 발생했습니다.');
+    }
+    setSettingsSaving(false);
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
@@ -911,15 +1065,27 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 250. 매점 관리 및 CSV 내보내기/가져오기 Tab */}
+      {/* 250. 매점 관리 및 아이템 등록/수정/삭제 Tab */}
       {activeTab === 'shop' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-blue-600" />
-              매점 아이템 목록 ({shopItems.length}종)
-            </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-blue-600" />
+                교내 매점 아이템 센터 ({shopItems.length}종)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                학생들이 획득한 코인으로 구매할 수 있는 매점 상품 및 디스코드 연동 혜택을 관리합니다.
+              </p>
+            </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAddShopModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors shadow-sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                신규 아이템 등록
+              </button>
               <button
                 onClick={handleExportShopCSV}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm"
@@ -931,24 +1097,288 @@ export default function AdminPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {shopItems.map((item) => (
-              <div
-                key={item.id}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-900 dark:text-white text-xs">{item.name}</span>
-                    <span className="text-xs font-bold text-amber-600 font-mono">{item.price?.toLocaleString()} 코인</span>
+            {shopItems.map((item) => {
+              const isActive = item.is_active === 1 || item.enabled === 1;
+              return (
+                <div
+                  key={item.id}
+                  className={`p-4 rounded-xl border transition-all bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between ${
+                    isActive
+                      ? 'border-slate-200 dark:border-slate-800'
+                      : 'border-slate-200 dark:border-slate-800 opacity-60 bg-slate-50 dark:bg-slate-950'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 dark:text-white text-xs">{item.name}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                            isActive
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
+                              : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                          }`}
+                        >
+                          {isActive ? '판매중' : '판매중단'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono">
+                        {item.price?.toLocaleString()} 코인
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 line-clamp-2">{item.description || '설명 없음'}</p>
                   </div>
-                  <p className="text-[11px] text-slate-500 line-clamp-2">{item.description}</p>
+
+                  <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                    <div className="flex justify-between text-[11px] text-slate-400">
+                      <span>종류: <b className="text-slate-600 dark:text-slate-300 font-mono">{item.item_type || 'general'}</b></span>
+                      <span>재고: <b className="text-slate-600 dark:text-slate-300 font-mono">{item.stock === -1 ? '무제한' : `${item.stock}개`}</b></span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <button
+                        onClick={() => handleToggleShopItem(item)}
+                        className={`flex-1 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                          isActive
+                            ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                            : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      >
+                        {isActive ? '판매 중단' : '판매 재개'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteShopItem(item.id, item.name)}
+                        className="p-1 px-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="아이템 삭제"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-[11px] text-slate-400">
-                  <span>종류: {item.item_type || '소모품'}</span>
-                  <span>재고: {item.stock === -1 ? '무제한' : `${item.stock}개`}</span>
+              );
+            })}
+          </div>
+
+          {/* 신규 매점 아이템 등록 모달 */}
+          {isAddShopModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-blue-600" />
+                    새 매점 아이템 등록
+                  </h3>
+                  <button onClick={() => setIsAddShopModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddShopItem} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">아이템 이름 *</label>
+                    <input
+                      type="text"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      placeholder="예: 특제 매점 빵, 특별 칭호 등"
+                      required
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">설명 및 효과</label>
+                    <textarea
+                      value={newItemDesc}
+                      onChange={(e) => setNewItemDesc(e.target.value)}
+                      placeholder="아이템 구매 시의 효과나 안내 문구를 입력하세요."
+                      rows={2}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">가격 (코인) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={newItemPrice}
+                        onChange={(e) => setNewItemPrice(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">재고 (-1 무제한)</label>
+                      <input
+                        type="number"
+                        value={newItemStock}
+                        onChange={(e) => setNewItemStock(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">아이템 종류</label>
+                    <select
+                      value={newItemType}
+                      onChange={(e) => setNewItemType(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                    >
+                      <option value="general">일반 (general)</option>
+                      <option value="consumable">소모품 (consumable)</option>
+                      <option value="title">칭호 (title)</option>
+                      <option value="role">디스코드 역할 (role)</option>
+                      <option value="badge_frame">학생증 프레임 (badge_frame)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddShopModalOpen(false)}
+                      className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 font-medium"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 text-xs rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      등록 완료
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 오늘의 질문 Tab */}
+      {activeTab === 'questions' && (
+        <div className="space-y-4">
+          <form
+            onSubmit={handleAddQuestion}
+            className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3"
+          >
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-blue-600" />
+              오늘의 질문 신규 등록 및 수정
+            </h3>
+            <p className="text-xs text-slate-500">
+              학생들이 디스코드와 웹앱에서 매일 확인하고 의견을 나눌 수 있는 오늘의 질문을 출제합니다.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs pt-1">
+              <div>
+                <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">날짜 (YYYY-MM-DD)</label>
+                <input
+                  type="date"
+                  value={newQDate}
+                  onChange={(e) => setNewQDate(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+
+              <div className="sm:col-span-3">
+                <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">질문 내용</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newQText}
+                    onChange={(e) => setNewQText(e.target.value)}
+                    placeholder="예: 올해 가장 기대되는 교내 축제 프로그램은 무엇인가요?"
+                    required
+                    className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold whitespace-nowrap flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    질문 등록
+                  </button>
                 </div>
               </div>
-            ))}
+            </div>
+          </form>
+
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">등록된 오늘의 질문 목록 ({questions.length}건)</h4>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400">
+                    <th className="p-3">날짜</th>
+                    <th className="p-3">질문 내용</th>
+                    <th className="p-3">작성자 ID</th>
+                    <th className="p-3">게시 상태</th>
+                    <th className="p-3 text-center">디스코드 공식 전송</th>
+                    <th className="p-3 text-center">삭제</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {questions.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-slate-400 text-xs">
+                        등록된 오늘의 질문이 없습니다. 상단에서 첫 질문을 등록해 보세요!
+                      </td>
+                    </tr>
+                  ) : (
+                    questions.map((q) => {
+                      const isPublished = Boolean(q.public_message_id);
+                      return (
+                        <tr key={q.date} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                          <td className="p-3 font-mono font-bold text-blue-600 dark:text-blue-400">{q.date}</td>
+                          <td className="p-3 text-slate-900 dark:text-white font-medium max-w-md">{q.question}</td>
+                          <td className="p-3 text-slate-400 font-mono text-[11px]">{q.author_id || '-'}</td>
+                          <td className="p-3">
+                            {isPublished ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                                <CheckCircle className="w-3 h-3" />
+                                게시 완료
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                미게시
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => handlePublishQuestion(q.date)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-semibold transition-colors shadow-sm"
+                            >
+                              <Send className="w-3 h-3" />
+                              {isPublished ? '재전송' : '채널 전송'}
+                            </button>
+                          </td>
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => handleDeleteQuestion(q.date)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                              title="질문 삭제"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -982,27 +1412,289 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 학교 설정 Tab */}
+      {/* 학교 및 봇 핵심 시스템 설정 Tab */}
       {activeTab === 'settings' && (
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Settings className="w-4 h-4 text-blue-600" />
-            학교 및 봇 핵심 시스템 설정
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            {Object.entries(settings).map(([k, v]) => (
-              <div key={k} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
-                <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1 font-mono">{k}</label>
+        <form onSubmit={handleSaveSettings} className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-4 h-4 text-blue-600" />
+                학교 및 봇 핵심 시스템 설정 센터
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                학사 운영 규칙, 디스코드 채널 및 역할 연동, 경제 보상 파라미터를 실시간으로 제어합니다.
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={settingsSaving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all disabled:opacity-50"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {settingsSaving ? '저장 중...' : '모든 설정 저장하기'}
+            </button>
+          </div>
+
+          {settingsMsg && (
+            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-200 flex items-center justify-between">
+              <span>{settingsMsg}</span>
+              <button type="button" onClick={() => setSettingsMsg(null)} className="font-bold">
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Section 1: 학사 운영 및 규칙 */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 border-l-2 border-blue-600 pl-2">
+              🎓 학사 운영 및 승급 규칙
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">학년당 반 개수 (class.count)</label>
                 <input
-                  type="text"
-                  value={v}
-                  onChange={(e) => setSettings({ ...settings, [k]: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono text-xs"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={settings['class.count'] || settings['max_classes'] || '5'}
+                  onChange={(e) => setSettings({ ...settings, 'class.count': e.target.value, max_classes: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
                 />
               </div>
-            ))}
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">승급 주기 개월 (grade.promotion_months)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={settings['grade.promotion_months'] || '4'}
+                  onChange={(e) => setSettings({ ...settings, 'grade.promotion_months': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">최대 학년 (grade.max_grade)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="6"
+                  value={settings['grade.max_grade'] || '3'}
+                  onChange={(e) => setSettings({ ...settings, 'grade.max_grade': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">교훈 및 공식 슬로건 (school.motto)</label>
+                <input
+                  type="text"
+                  value={settings['school.motto'] || '지혜를 닦고 덕성을 길러 세계를 밝히자'}
+                  onChange={(e) => setSettings({ ...settings, 'school.motto': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">방학 모드 (school.vacation_mode)</label>
+                <select
+                  value={settings['school.vacation_mode'] || 'false'}
+                  onChange={(e) => setSettings({ ...settings, 'school.vacation_mode': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                >
+                  <option value="false">학기 중 (정상 운영)</option>
+                  <option value="true">방학 기간 (출석 보너스 변동)</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* Section 2: 교내 경제 및 보상 파라미터 */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 border-l-2 border-emerald-500 pl-2">
+              💰 교내 경제 및 보상 규칙
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 최소 코인</label>
+                <input
+                  type="number"
+                  value={settings['attendance.point_min'] || settings['attendance_coins'] || '50'}
+                  onChange={(e) => setSettings({ ...settings, 'attendance.point_min': e.target.value, attendance_coins: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 최대 코인</label>
+                <input
+                  type="number"
+                  value={settings['attendance.point_max'] || '150'}
+                  onChange={(e) => setSettings({ ...settings, 'attendance.point_max': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">은행 일일 이자율 (bps, 10=1%)</label>
+                <input
+                  type="number"
+                  value={settings['bank.daily_rate_bps'] || '20'}
+                  onChange={(e) => setSettings({ ...settings, 'bank.daily_rate_bps': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">은행 예금 한도 (코인)</label>
+                <input
+                  type="number"
+                  value={settings['bank.deposit_limit'] || '5000000'}
+                  onChange={(e) => setSettings({ ...settings, 'bank.deposit_limit': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">송금 수수료율 (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={settings['economy.transfer_fee_percent'] || '5'}
+                  onChange={(e) => setSettings({ ...settings, 'economy.transfer_fee_percent': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">알바 쿨타임 (분)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  value={settings['part_time.cooldown_minutes'] || '30'}
+                  onChange={(e) => setSettings({ ...settings, 'part_time.cooldown_minutes': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">동아리 창설 비용 (코인)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={settings['club.create_cost'] || '1000'}
+                  onChange={(e) => setSettings({ ...settings, 'club.create_cost': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">벌점 징계 임계점</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={settings['discipline.penalty_limit'] || '10'}
+                  onChange={(e) => setSettings({ ...settings, 'discipline.penalty_limit': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: 디스코드 채널 ID 연동 */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 border-l-2 border-indigo-500 pl-2">
+              📢 디스코드 채널 ID 연동
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { k: 'channel.admission_notice', l: '입학 알림 채널 ID' },
+                { k: 'channel.attendance', l: '출석 체크 채널 ID' },
+                { k: 'channel.notice', l: '공식 학교 공지 채널 ID' },
+                { k: 'channel.discipline', l: '생활지도/상벌점 채널 ID' },
+                { k: 'channel.daily_question_public', l: '오늘의 질문 학생 공개 채널 ID' },
+                { k: 'channel.daily_question_admin', l: '오늘의 질문 관리자 채널 ID' },
+                { k: 'channel.club_recruit', l: '동아리 모집 홍보 채널 ID' },
+                { k: 'channel.log', l: '통합 활동 감사 로그 채널 ID' },
+                { k: 'channel.birthday', l: '생일 자동 축하 채널 ID' },
+                { k: 'channel.achievement', l: '업적 달성 알림 채널 ID' },
+              ].map(({ k, l }) => (
+                <div key={k}>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">{l}</label>
+                  <input
+                    type="text"
+                    value={settings[k] || ''}
+                    onChange={(e) => setSettings({ ...settings, [k]: e.target.value })}
+                    placeholder="채널 ID (숫자)"
+                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 4: 디스코드 역할 ID 연동 */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 border-l-2 border-purple-500 pl-2">
+              🏷️ 디스코드 역할 ID 연동
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { k: 'role.student', l: '재학생 공식 역할 ID' },
+                { k: 'role.teacher', l: '교직원/선생님 역할 ID' },
+                { k: 'role.council', l: '학생회 역할 ID' },
+                { k: 'role.graduate', l: '졸업생 공식 역할 ID' },
+                { k: 'role.birthday', l: '생일자 축하 역할 ID' },
+                { k: 'role.admission_extra', l: '입학 시 자동 지급 추가 역할 ID들 (쉼표 구분)' },
+              ].map(({ k, l }) => (
+                <div key={k}>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">{l}</label>
+                  <input
+                    type="text"
+                    value={settings[k] || ''}
+                    onChange={(e) => setSettings({ ...settings, [k]: e.target.value })}
+                    placeholder="역할 ID"
+                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 5: 자동화 스케줄러 & 알림 */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 border-l-2 border-amber-500 pl-2">
+              ⏰ 자동화 스케줄러 및 공개 알림
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 자동 출제 시 (0~23)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  value={settings['question.hour'] || '9'}
+                  onChange={(e) => setSettings({ ...settings, 'question.hour': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 자동 출제 분 (0~59)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={settings['question.minute'] || '0'}
+                  onChange={(e) => setSettings({ ...settings, 'question.minute': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">업적 달성 알림 전송</label>
+                <select
+                  value={settings['achievement.notify'] === 'false' ? 'false' : 'true'}
+                  onChange={(e) => setSettings({ ...settings, 'achievement.notify': e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                >
+                  <option value="true">알림 켜기 (공개 채널 알림)</option>
+                  <option value="false">알림 끄기 (조용히 지급)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
       )}
 
       {/* 253. 학생 정보 수정 모달 */}
