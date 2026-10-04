@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: '상현고등학교 포털 | SANGHYUN HIGH SCHOOL',
-  description: '디스코드 가상 역할극 상현고등학교 공식 학사 관리 및 학생 포털 시스템',
+  description: '상현고등학교 공식 학사 관리 및 학생 포털 시스템',
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="dark">
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
@@ -21,24 +21,38 @@ export default function RootLayout({
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const stored = localStorage.getItem('theme');
+                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
       </head>
-      <body className="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+      <body className="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
         <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
           {children}
         </main>
-        <footer className="border-t border-slate-900 bg-slate-950/80 py-8 px-4 text-center text-xs text-slate-500">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 px-4 text-center text-xs text-slate-500">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
-              <div className="font-bold text-slate-400">상현고등학교 가상 학사 포털</div>
-              <p className="mt-0.5">Workshop Koharu. All rights reserved.</p>
+              <div className="font-semibold text-slate-700 dark:text-slate-300">상현고등학교 학사 포털</div>
+              <p className="mt-0.5 text-slate-400">Sanghyun High School. All rights reserved.</p>
             </div>
-            <div className="flex items-center gap-4 text-slate-400">
-              <a href="https://github.com/Workshop-Koharu" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+            <div className="flex items-center gap-3 text-slate-400">
+              <a href="https://github.com/Workshop-Koharu" target="_blank" rel="noreferrer" className="hover:text-slate-700 dark:hover:text-white transition-colors">
                 GitHub
               </a>
               <span>●</span>
-              <span>상현 고등학교 1528353970714841110</span>
+              <span>서버 ID: 1528353970714841110</span>
             </div>
           </div>
         </footer>

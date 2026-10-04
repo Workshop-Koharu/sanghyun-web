@@ -1,15 +1,28 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { getBaseUrl, COOKIE_NAME } from '@/lib/auth';
 
-export async function POST(req: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
-  const res = NextResponse.json({ success: true });
-  res.cookies.delete('sanghyun_session');
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: Request) {
+  const appUrl = getBaseUrl(req);
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete('sanghyun_user_hint');
+
+  const res = NextResponse.redirect(`${appUrl}/`);
+  res.cookies.delete(COOKIE_NAME);
+  res.cookies.delete('sanghyun_user_hint');
   return res;
 }
 
-export async function GET(req: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
-  const res = NextResponse.redirect(`${appUrl}/`);
-  res.cookies.delete('sanghyun_session');
+export async function POST(req: Request) {
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete('sanghyun_user_hint');
+
+  const res = NextResponse.json({ success: true });
+  res.cookies.delete(COOKIE_NAME);
+  res.cookies.delete('sanghyun_user_hint');
   return res;
 }

@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSessionToken, checkUserPermissions, UserSession } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { createSessionToken, checkUserPermissions, UserSession, getBaseUrl, COOKIE_NAME } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get('code');
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+  const appUrl = getBaseUrl(req);
   const redirectUri = `${appUrl}/api/auth/callback`;
 
   if (!code) {
@@ -64,12 +67,36 @@ export async function GET(req: NextRequest) {
 
     const sessionToken = await createSessionToken(sessionPayload);
 
+    const isHttps = req.nextUrl.protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';
     const targetRedirect = permissions.isAdmin ? `${appUrl}/admin` : `${appUrl}/dashboard`;
-    const response = NextResponse.redirect(targetRedirect);
 
-    response.cookies.set('sanghyun_session', sessionToken, {
+    const cookieStore = await cookies();
+    cookieStore.set(COOKIE_NAME, sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    cookieStore.set('sanghyun_user_hint', userData.id, {
+      httpOnly: false,
+      secure: isHttps,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    const response = NextResponse.redirect(targetRedirect);
+    response.cookies.set(COOKIE_NAME, sessionToken, {
+      httpOnly: true,
+      secure: isHttps,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    response.cookies.set('sanghyun_user_hint', userData.id, {
+      httpOnly: false,
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 7,

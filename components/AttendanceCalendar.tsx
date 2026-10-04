@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CheckCircle2, Flame, Award, Clock } from 'lucide-react';
+import { Calendar, CheckCircle2, Flame, Award } from 'lucide-react';
 
 interface AttendanceProps {
   stats: {
@@ -39,80 +39,78 @@ export default function AttendanceCalendar({ stats, recentAttendance }: Attendan
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card p-4 rounded-2xl flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-            <Flame className="w-6 h-6 text-orange-400" />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800 flex items-center justify-center text-orange-600 dark:text-orange-400">
+            <Flame className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400">현재 연속 출석</div>
-            <div className="text-2xl font-black text-white font-mono">{stats.current_streak}일</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">현재 연속 출석</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">{stats.current_streak}일</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 rounded-2xl flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
-            <Calendar className="w-6 h-6 text-sky-400" />
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400">누적 출석일</div>
-            <div className="text-2xl font-black text-white font-mono">{stats.total_days}일</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">누적 출석일</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">{stats.total_days}일</div>
           </div>
         </div>
 
-        <div className="glass-card p-4 rounded-2xl flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-            <Award className="w-6 h-6 text-indigo-400" />
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <Award className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400">최고 연속 기록</div>
-            <div className="text-2xl font-black text-white font-mono">{stats.max_streak}일</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">최고 연속 기록</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">{stats.max_streak}일</div>
           </div>
         </div>
       </div>
 
-      <div className="glass-panel p-6 rounded-2xl">
+      <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-sky-400" />
-            {year}년 {month + 1}월 출석 현황
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-blue-500" />
+            {year}년 {month + 1}월 출석부
           </h3>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
             최근 출석: {stats.last_attendance_date || '없음'}
           </span>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 mb-2">
-          <div className="text-rose-400">일</div>
+        <div className="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+          <div className="text-rose-500">일</div>
           <div>월</div>
           <div>화</div>
           <div>수</div>
           <div>목</div>
           <div>금</div>
-          <div className="text-sky-400">토</div>
+          <div className="text-blue-500">토</div>
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1.5">
           {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
-            <div key={`empty-${idx}`} className="h-14 rounded-xl bg-slate-900/30" />
+            <div key={`empty-${idx}`} className="h-12 rounded-lg bg-slate-50 dark:bg-slate-950/40" />
           ))}
 
           {daysArray.map((d) => (
             <div
               key={d.day}
-              className={`h-14 rounded-xl p-1.5 flex flex-col justify-between transition-all border ${
+              className={`h-12 rounded-lg p-1.5 flex flex-col justify-between border text-xs font-mono ${
                 d.attended
-                  ? 'bg-blue-600/20 border-blue-500/40 text-blue-200'
-                  : 'bg-slate-900/40 border-slate-800/60 text-slate-500'
+                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400'
               }`}
             >
-              <span className="text-xs font-mono font-bold text-left">{d.day}</span>
+              <span>{d.day}</span>
               {d.attended && (
                 <div className="flex justify-end">
-                  <span className="w-5 h-5 rounded-full bg-blue-500/30 flex items-center justify-center text-blue-300">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  </span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 </div>
               )}
             </div>

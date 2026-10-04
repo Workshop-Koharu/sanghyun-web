@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getBaseUrl } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const clientId = process.env.DISCORD_CLIENT_ID || '1555170310498549840';
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+  const appUrl = getBaseUrl(req);
   const redirectUri = `${appUrl}/api/auth/callback`;
 
   const scope = encodeURIComponent('identify guilds');

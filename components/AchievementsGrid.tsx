@@ -1,6 +1,6 @@
 'use client';
 
-import { Trophy, CheckCircle, Lock, Coins, Sparkles } from 'lucide-react';
+import { Trophy, CheckCircle, Lock, Coins } from 'lucide-react';
 
 const ACHIEVEMENTS_DATA = [
   { id: 1, name: "첫 입학", description: "상현 고등학교 입학 완료", reward_coins: 100, title_reward: "신입생" },
@@ -31,8 +31,8 @@ const ACHIEVEMENTS_DATA = [
   { id: 26, name: "자기소개 작성", description: "학생 자기소개서 등록 완료", reward_coins: 100 },
   { id: 27, name: "생일 등록", description: "생일 정보 등록 완료", reward_coins: 50 },
   { id: 28, name: "2학년 진급", description: "2학년으로 진급 완료", reward_coins: 200 },
-  { id: 29, "name": "3학년 진급", description: "3학년으로 진급 완료", reward_coins: 300, title_reward: "최고학년" },
-  { id: 30, "name": "졸업", description: "상현 고등학교 전 과정 졸업 완료", reward_coins: 1000, title_reward: "영광의 졸업생" },
+  { id: 29, name: "3학년 진급", description: "3학년으로 진급 완료", reward_coins: 300, title_reward: "최고학년" },
+  { id: 30, name: "졸업", description: "상현 고등학교 전 과정 졸업 완료", reward_coins: 1000, title_reward: "영광의 졸업생" },
 ];
 
 interface AchievementsProps {
@@ -51,33 +51,33 @@ export default function AchievementsGrid({ unlockedList }: AchievementsProps) {
   const percent = Math.floor((unlockedCount / totalCount) * 100);
 
   return (
-    <div className="space-y-6">
-      <div className="glass-card p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <Trophy className="w-7 h-7 text-amber-400" />
+    <div className="space-y-4">
+      <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">학교 업적 달성도</h3>
-            <p className="text-xs text-slate-400">다양한 학교 생활에 참여하여 업적을 달성해 보세요.</p>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">학교 업적 달성도</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">학교 활동에 참여하여 업적을 달성하세요.</p>
           </div>
         </div>
 
-        <div className="w-full sm:w-64 space-y-1.5">
-          <div className="flex justify-between text-xs font-mono">
-            <span className="text-slate-400">달성률 ({unlockedCount}/{totalCount})</span>
-            <span className="text-amber-400 font-bold">{percent}%</span>
+        <div className="w-full sm:w-56 space-y-1">
+          <div className="flex justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
+            <span>달성률 ({unlockedCount}/{totalCount})</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold">{percent}%</span>
           </div>
-          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+          <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all"
+              className="h-full bg-amber-500 rounded-full"
               style={{ width: `${percent}%` }}
             />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
         {ACHIEVEMENTS_DATA.map((ach) => {
           const unlockedAt = unlockedMap.get(ach.id);
           const isUnlocked = !!unlockedAt;
@@ -85,48 +85,48 @@ export default function AchievementsGrid({ unlockedList }: AchievementsProps) {
           return (
             <div
               key={ach.id}
-              className={`p-4 rounded-xl border transition-all ${
+              className={`p-3.5 rounded-lg border transition-all ${
                 isUnlocked
-                  ? 'bg-slate-900/60 border-amber-500/30 shadow-sm shadow-amber-950/20'
-                  : 'bg-slate-900/30 border-slate-800/60 opacity-60'
+                  ? 'border-amber-300 dark:border-amber-800/80 bg-white dark:bg-slate-900 shadow-sm'
+                  : 'border-slate-200 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-900/30 opacity-60'
               }`}
             >
-              <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    className={`w-7 h-7 rounded-md flex items-center justify-center text-xs ${
                       isUnlocked
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-slate-800 text-slate-500'
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
                     }`}
                   >
-                    {isUnlocked ? <Trophy className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    {isUnlocked ? <Trophy className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white">{ach.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">업적 #{ach.id}</div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">{ach.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">#{ach.id}</div>
                   </div>
                 </div>
 
                 {isUnlocked && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center gap-0.5">
                     <CheckCircle className="w-3 h-3" />
                     달성
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-slate-400 mb-3">{ach.description}</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">{ach.description}</p>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
-                <div className="flex items-center gap-1.5 text-amber-400 font-mono text-[11px]">
-                  <Coins className="w-3.5 h-3.5" />
+              <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-[11px]">
+                  <Coins className="w-3 h-3" />
                   +{ach.reward_coins} 코인
                 </div>
 
                 {ach.title_reward && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
-                    칭호: {ach.title_reward}
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium">
+                    {ach.title_reward}
                   </span>
                 )}
               </div>
