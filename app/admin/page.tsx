@@ -12,6 +12,7 @@ import {
   Trash2,
   Search,
   CheckCircle,
+  Send,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -232,6 +233,26 @@ export default function AdminPage() {
       const res = await fetch(`/api/admin/questions?date=${date}`, { method: 'DELETE' });
       if (res.ok) loadQuestions();
     } catch {}
+  }
+
+  async function handlePublishQuestion(date: string) {
+    if (!confirm(`[${date}] 오늘의 질문을 디스코드 공개 채널로 즉시 전송하시겠습니까?`)) return;
+    try {
+      const res = await fetch('/api/admin/questions/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert('디스코드 공개 채널로 성공적으로 전송되었습니다.');
+        loadQuestions();
+      } else {
+        alert(`전송 실패: ${data.error || '알 수 없는 오류'}`);
+      }
+    } catch (e: any) {
+      alert(`전송 오류: ${e.message}`);
+    }
   }
 
   if (loading) {
@@ -765,7 +786,9 @@ export default function AdminPage() {
                   <th className="p-3">날짜</th>
                   <th className="p-3">질문 내용</th>
                   <th className="p-3">작성자 ID</th>
-                  <th className="p-3">삭제</th>
+                  <th className="p-3">상태</th>
+                  <th className="p-3 text-center">디스코드 전송</th>
+                  <th className="p-3 text-center">삭제</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -775,6 +798,26 @@ export default function AdminPage() {
                     <td className="p-3 text-slate-900 dark:text-white font-sans">{q.question}</td>
                     <td className="p-3 text-slate-500 dark:text-slate-400">{q.author_id}</td>
                     <td className="p-3">
+                      {q.public_message_id ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                          게시 완료
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
+                          미게시
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => handlePublishQuestion(q.date)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-colors"
+                      >
+                        <Send className="w-3 h-3" />
+                        전송
+                      </button>
+                    </td>
+                    <td className="p-3 text-center">
                       <button
                         onClick={() => handleDeleteQuestion(q.date)}
                         className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"

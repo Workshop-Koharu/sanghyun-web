@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const questions = await query<any>(
-      `SELECT id, date, question_text as question, author_id, created_at 
+      `SELECT id, date, question_text as question, author_id, public_message_id, written_at, created_at 
        FROM daily_questions 
        ORDER BY date DESC 
        LIMIT 50`
@@ -36,11 +36,14 @@ export async function POST(req: NextRequest) {
     const nowSeconds = Math.floor(Date.now() / 1000);
 
     const saved = await queryOne<any>(
-      `INSERT INTO daily_questions (date, question_text, author_id, created_at)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO daily_questions (date, question_text, author_id, written_at, created_at)
+       VALUES ($1, $2, $3, $4, $4)
        ON CONFLICT (date)
-       DO UPDATE SET question_text = EXCLUDED.question_text, author_id = EXCLUDED.author_id
-       RETURNING id, date, question_text as question, author_id, created_at`,
+       DO UPDATE SET 
+         question_text = EXCLUDED.question_text, 
+         author_id = EXCLUDED.author_id,
+         written_at = EXCLUDED.written_at
+       RETURNING id, date, question_text as question, author_id, public_message_id, written_at, created_at`,
       [date, question, BigInt(session.userId), nowSeconds]
     );
 
