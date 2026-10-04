@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const items = await query<any>(
-      `SELECT id, name, description, price, category as item_type, stock, active as is_active, created_at 
+      `SELECT id, name, description, price, stock, item_type, enabled as is_active, created_at 
        FROM shop_items 
        ORDER BY id ASC`
     );
@@ -32,23 +32,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '이름과 가격은 필수 항목입니다.' }, { status: 400 });
     }
 
-    let cat = (item_type || 'item').toLowerCase();
-    if (!['title', 'item', 'role', 'badge_frame', 'consumable', 'special'].includes(cat)) {
-      cat = 'item';
+    let cat = (item_type || 'general').toLowerCase();
+    if (!['title', 'role', 'consumable', 'badge_frame', 'general'].includes(cat)) {
+      cat = 'general';
     }
 
     const nowSeconds = Math.floor(Date.now() / 1000);
+    const createdBy = session.userId || '0';
 
     const newItem = await queryOne<any>(
-      `INSERT INTO shop_items (name, description, price, category, stock, active, created_at)
-       VALUES ($1, $2, $3, $4, $5, 1, $6)
-       RETURNING id, name, description, price, category as item_type, stock, active as is_active, created_at`,
+      `INSERT INTO shop_items (name, description, price, stock, item_type, payload_json, per_user_limit, enabled, created_by, created_at)
+       VALUES ($1, $2, $3, $4, $5, '{}', 0, 1, $6, $7)
+       RETURNING id, name, description, price, stock, item_type, enabled as is_active, created_at`,
       [
-        name,
-        description || '',
+        name.trim(),
+        description ? description.trim() : '',
         parseInt(price, 10),
+        stock !== undefined && stock !== '' ? parseInt(stock, 10) : -1,
         cat,
-        stock !== undefined ? parseInt(stock, 10) : -1,
+        createdBy,
         nowSeconds,
       ]
     );
@@ -80,14 +82,14 @@ export async function PUT(req: NextRequest) {
            description = COALESCE($3, description),
            price = COALESCE($4, price),
            stock = COALESCE($5, stock),
-           category = COALESCE($6, category),
-           active = COALESCE($7, active)
+           item_type = COALESCE($6, item_type),
+           enabled = COALESCE($7, enabled)
        WHERE id = $1
-       RETURNING id, name, description, price, category as item_type, stock, active as is_active, created_at`,
+       RETURNING id, name, description, price, stock, item_type, enabled as is_active, created_at`,
       [
         id,
-        name,
-        description,
+        name ? name.trim() : null,
+        description !== undefined ? description.trim() : null,
         price !== undefined ? parseInt(price, 10) : null,
         stock !== undefined ? parseInt(stock, 10) : null,
         item_type,

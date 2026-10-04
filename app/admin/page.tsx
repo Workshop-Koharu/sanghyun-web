@@ -340,108 +340,314 @@ export default function AdminPage() {
       </div>
 
       {activeTab === 'settings' && (
-        <form onSubmit={handleSaveSettings} className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-5">
+        <form onSubmit={handleSaveSettings} className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Settings className="w-4 h-4 text-amber-500" />
-              학사 운영 파라미터 및 채널 설정
-            </h2>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-4 h-4 text-amber-500" />
+                학사 운영 파라미터 및 시스템 상세 설정
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                채널 연동, 역할 지급, 경제/은행 이율, 학년제 및 알바 운영 설정을 실시간으로 변경합니다.
+              </p>
+            </div>
             <button
               type="submit"
               disabled={settingsSaving}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-sm transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-sm transition-colors"
             >
               <Save className="w-3.5 h-3.5" />
-              {settingsSaving ? '저장 중...' : '저장하기'}
+              {settingsSaving ? '저장 중...' : '전체 설정 저장'}
             </button>
           </div>
 
           {settingsMsg && (
-            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
               {settingsMsg}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-            <div className="space-y-3">
-              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-amber-500 pl-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+            {/* Section 1: Channels */}
+            <div className="p-4 rounded-xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-blue-500 pl-2">
                 디스코드 채널 ID 연동
               </h3>
               <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1">입학 신청 채널 ID (channel_admission)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">신입생 입학 공지 채널 (channel.admission_notice)</label>
                 <input
                   type="text"
-                  value={settings['channel_admission'] || ''}
-                  onChange={(e) => setSettings({ ...settings, channel_admission: e.target.value })}
+                  value={settings['channel.admission_notice'] || settings['channel_admission'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.admission_notice': e.target.value, channel_admission: e.target.value })}
                   placeholder="예: 123456789012345678"
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                 />
               </div>
               <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 체크 채널 ID (channel_attendance)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">관리 및 감사 로그 채널 (channel.log)</label>
                 <input
                   type="text"
-                  value={settings['channel_attendance'] || ''}
-                  onChange={(e) => setSettings({ ...settings, channel_attendance: e.target.value })}
+                  value={settings['channel.log'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.log': e.target.value })}
                   placeholder="예: 123456789012345678"
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                 />
               </div>
               <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1">상벌점 공지 채널 ID (channel_discipline)</label>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">생일 축하 메시지 채널 (channel.birthday)</label>
                 <input
                   type="text"
-                  value={settings['channel_discipline'] || ''}
-                  onChange={(e) => setSettings({ ...settings, channel_discipline: e.target.value })}
+                  value={settings['channel.birthday'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.birthday': e.target.value })}
                   placeholder="예: 123456789012345678"
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">업적 달성 알림 채널 (channel.achievement)</label>
+                <input
+                  type="text"
+                  value={settings['channel.achievement'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.achievement': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 공개 채널 (channel.daily_question_public)</label>
+                <input
+                  type="text"
+                  value={settings['channel.daily_question_public'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.daily_question_public': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 관리자 패널 채널 (channel.daily_question_admin)</label>
+                <input
+                  type="text"
+                  value={settings['channel.daily_question_admin'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'channel.daily_question_admin': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-amber-500 pl-2">
-                운영 규칙 및 보상
+            {/* Section 2: Roles */}
+            <div className="p-4 rounded-xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-indigo-500 pl-2">
+                디스코드 역할 ID 연동
+              </h3>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">기본 학생 역할 ID (role.student)</label>
+                <input
+                  type="text"
+                  value={settings['role.student'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.student': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">선생님 / 관리자 역할 ID (role.teacher)</label>
+                <input
+                  type="text"
+                  value={settings['role.teacher'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.teacher': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">학생회 역할 ID (role.council)</label>
+                <input
+                  type="text"
+                  value={settings['role.council'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.council': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">졸업생 역할 ID (role.graduate)</label>
+                <input
+                  type="text"
+                  value={settings['role.graduate'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.graduate': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">생일자 역할 ID (role.birthday)</label>
+                <input
+                  type="text"
+                  value={settings['role.birthday'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.birthday': e.target.value })}
+                  placeholder="예: 123456789012345678"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 dark:text-slate-400 mb-1">입학 시 추가 지급 역할 ID 목록 (쉼표 구분)</label>
+                <input
+                  type="text"
+                  value={settings['role.admission_extra'] || ''}
+                  onChange={(e) => setSettings({ ...settings, 'role.admission_extra': e.target.value })}
+                  placeholder="1553284771386499184, 1556200525182009435..."
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Section 3: Economy & Bank */}
+            <div className="p-4 rounded-xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-emerald-500 pl-2">
+                경제 및 은행 / 알바 운영 파라미터
               </h3>
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 기본 코인</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 최소 코인</label>
                   <input
                     type="number"
-                    value={settings['attendance_coins'] || '50'}
-                    onChange={(e) => setSettings({ ...settings, attendance_coins: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                    value={settings['attendance.point_min'] || settings['attendance_coins'] || '50'}
+                    onChange={(e) => setSettings({ ...settings, 'attendance.point_min': e.target.value, attendance_coins: e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 기본 경험치</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">출석 최대 코인</label>
                   <input
                     type="number"
-                    value={settings['attendance_exp'] || '20'}
-                    onChange={(e) => setSettings({ ...settings, attendance_exp: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                    value={settings['attendance.point_max'] || '150'}
+                    onChange={(e) => setSettings({ ...settings, 'attendance.point_max': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-slate-500 dark:text-slate-400 mb-1">은행 연이자율 (%)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">예금 일일 이율 bps (20bps = 0.2%)</label>
                   <input
                     type="number"
-                    step="0.1"
-                    value={settings['bank_interest_rate'] || '2.0'}
-                    onChange={(e) => setSettings({ ...settings, bank_interest_rate: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                    value={settings['bank.daily_rate_bps'] || '20'}
+                    onChange={(e) => setSettings({ ...settings, 'bank.daily_rate_bps': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 dark:text-slate-400 mb-1">학년당 최대 반 수</label>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">예금 최대 한도 (코인)</label>
                   <input
                     type="number"
-                    value={settings['max_classes'] || '3'}
-                    onChange={(e) => setSettings({ ...settings, max_classes: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-500"
+                    value={settings['bank.deposit_limit'] || '5000000'}
+                    onChange={(e) => setSettings({ ...settings, 'bank.deposit_limit': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">송금 수수료 (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={settings['economy.transfer_fee_percent'] || '5'}
+                    onChange={(e) => setSettings({ ...settings, 'economy.transfer_fee_percent': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">알바 쿨타임 (분)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={settings['part_time.cooldown_minutes'] || '30'}
+                    onChange={(e) => setSettings({ ...settings, 'part_time.cooldown_minutes': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Academic Operations */}
+            <div className="p-4 rounded-xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs border-l-2 border-amber-500 pl-2">
+                학사 운영 및 자동화 규칙
+              </h3>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">학년당 반 개수</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={settings['class.count'] || settings['max_classes'] || '5'}
+                    onChange={(e) => setSettings({ ...settings, 'class.count': e.target.value, max_classes: e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">승급 주기 (개월)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={settings['grade.promotion_months'] || '4'}
+                    onChange={(e) => setSettings({ ...settings, 'grade.promotion_months': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">최대 학년 (초과 시 졸업)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="6"
+                    value={settings['grade.max_grade'] || '3'}
+                    onChange={(e) => setSettings({ ...settings, 'grade.max_grade': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">업적 달성 알림 전송</label>
+                  <select
+                    value={settings['achievement.notify'] === 'false' ? 'false' : 'true'}
+                    onChange={(e) => setSettings({ ...settings, 'achievement.notify': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs"
+                  >
+                    <option value="true">알림 켜기 (공개)</option>
+                    <option value="false">알림 끄기 (조용히)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 자동 전송 (시)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={settings['question.hour'] || '9'}
+                    onChange={(e) => setSettings({ ...settings, 'question.hour': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1">오늘의 질문 자동 전송 (분)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={settings['question.minute'] || '0'}
+                    onChange={(e) => setSettings({ ...settings, 'question.minute': e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-mono text-xs"
                   />
                 </div>
               </div>
