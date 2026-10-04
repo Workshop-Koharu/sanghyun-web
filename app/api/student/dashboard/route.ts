@@ -23,10 +23,13 @@ export async function GET(req: NextRequest) {
               s.status,
               s.created_at as enrolled_at,
               s.intro_json,
-              c.name as club_name
+              c.id as club_id,
+              c.name as club_name,
+              c.description as club_desc,
+              cm.role as club_role
        FROM students s 
        LEFT JOIN club_members cm ON s.user_id = cm.user_id
-       LEFT JOIN clubs c ON cm.club_id = c.id 
+       LEFT JOIN clubs c ON cm.club_id = c.id AND c.status IN ('recruiting', 'active')
        WHERE s.user_id = $1`,
       [userId]
     );
@@ -61,7 +64,7 @@ export async function GET(req: NextRequest) {
     let bankRow = { balance: 0, total_interest: 0, last_interest_at: null };
     try {
       const res = await queryOne<any>(
-        `SELECT balance, 0 as total_interest, last_interest_date as last_interest_at 
+        `SELECT deposit_balance as balance, 0 as total_interest, last_interest_date as last_interest_at 
          FROM bank_accounts 
          WHERE user_id = $1`,
         [userId]
@@ -69,10 +72,10 @@ export async function GET(req: NextRequest) {
       if (res) bankRow = res;
     } catch {}
 
-    let levelRow = { level: 0, exp: 0, total_exp: 0 };
+    let levelRow = { level: 1, exp: 0, total_exp: 0, message_count: 0, voice_seconds: 0 };
     try {
       const res = await queryOne<any>(
-        `SELECT level, xp as exp, xp as total_exp 
+        `SELECT level, xp as exp, xp as total_exp, message_count, voice_seconds 
          FROM levels 
          WHERE user_id = $1`,
         [userId]
@@ -108,11 +111,11 @@ export async function GET(req: NextRequest) {
     let recentAttendance: any[] = [];
     try {
       recentAttendance = await query<any>(
-        `SELECT date, streak as consecutive_days, base_points as reward_coins, bonus_points as reward_exp 
+        `SELECT date, streak as consecutive_days, points as reward_coins, bonus as reward_exp 
          FROM attendance 
          WHERE user_id = $1 
          ORDER BY date DESC 
-         LIMIT 31`,
+         LIMIT 60`,
         [userId]
       );
     } catch {}
@@ -120,11 +123,11 @@ export async function GET(req: NextRequest) {
     let inventory: any[] = [];
     try {
       inventory = await query<any>(
-        `SELECT i.item_id, i.quantity, i.updated_at as acquired_at, s.name, s.description, s.category as item_type, s.price 
+        `SELECT i.item_id, i.quantity, i.acquired_at, s.name, s.description, s.item_type, s.price, s.payload_json 
          FROM inventory i 
          JOIN shop_items s ON i.item_id = s.id 
          WHERE i.user_id = $1 
-         ORDER BY i.updated_at DESC`,
+         ORDER BY i.acquired_at DESC`,
         [userId]
       );
     } catch {}
@@ -132,11 +135,11 @@ export async function GET(req: NextRequest) {
     let disciplineLogs: any[] = [];
     try {
       disciplineLogs = await query<any>(
-        `SELECT id, issued_by as teacher_id, points, kind as type, reason, created_at 
+        `SELECT id, issued_by as teacher_id, points, kind as type, reason, created_at, revoked 
          FROM discipline 
          WHERE user_id = $1 
          ORDER BY created_at DESC 
-         LIMIT 20`,
+         LIMIT 30`,
         [userId]
       );
     } catch {}
@@ -144,13 +147,60 @@ export async function GET(req: NextRequest) {
     let unlockedAchievements: any[] = [];
     try {
       unlockedAchievements = await query<any>(
-        `SELECT achievement_id, unlocked_at 
-         FROM user_achievements 
+        `SELECT achievement_id, achieved_at as unlocked_at 
+         FROM achievements_owned 
          WHERE user_id = $1 
-         ORDER BY unlocked_at DESC`,
+         ORDER BY achieved_at DESC`,
         [userId]
       );
     } catch {}
+
+    let studentHistory: any[] = [];
+    try {
+      studentHistory = await query<any>(
+        `SELECT id, event_type, from_value, to_value, created_at 
+         FROM student_history 
+         WHERE user_id = $1 
+         ORDER BY created_at ASC`,
+        [userId]
+      );
+    } catch {}
+
+    let transactions: any[] = [];
+    try {
+      transactions = await query<any>(
+        `SELECT id, type, amount, balance_after, counterparty_id, memo, created_at 
+         FROM transactions 
+         WHERE user_id = $1 
+         ORDER BY created_at DESC 
+         LIMIT 50`,
+        [userId]
+      );
+    } catch {}
+
+    let announcements: any[] = [];
+    try {
+      announcements = await query<any>(
+        `SELECT id, title, content, author_name, pinned, created_at 
+         FROM announcements 
+         ORDER BY pinned DESC, created_at DESC 
+         LIMIT 15`
+      );
+    } catch {}
+
+    let clubMembers: any[] = [];
+    if (studentRow?.club_id) {
+      try {
+        clubMembers = await query<any>(
+          `SELECT cm.user_id, cm.role, s.nickname 
+           FROM club_members cm 
+           LEFT JOIN students s ON cm.user_id = s.user_id 
+           WHERE cm.club_id = $1 
+           ORDER BY cm.role DESC, cm.joined_at ASC`,
+          [studentRow.club_id]
+        );
+      } catch {}
+    }
 
     return NextResponse.json({
       student,
@@ -163,6 +213,18 @@ export async function GET(req: NextRequest) {
       inventory,
       disciplineLogs,
       unlockedAchievements,
+      studentHistory,
+      transactions,
+      announcements,
+      club: studentRow?.club_id
+        ? {
+            id: studentRow.club_id,
+            name: studentRow.club_name,
+            description: studentRow.club_desc,
+            role: studentRow.club_role,
+            members: clubMembers,
+          }
+        : null,
     });
   } catch (error: any) {
     console.error('Student dashboard error:', error);

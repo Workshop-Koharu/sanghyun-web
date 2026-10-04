@@ -1,0 +1,16 @@
+{
+  "name": "상현고등학교 스마트 학사 포털",
+  "short_name": "상현고",
+  "description": "상현고등학교 공식 스마트 학생증 및 학사 운영 포털",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#4F6BED",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

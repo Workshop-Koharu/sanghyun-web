@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 export const metadata: Metadata = {
   title: '상현고등학교 포털 | SANGHYUN HIGH SCHOOL',
   description: '상현고등학교 공식 학사 관리 및 학생 포털 시스템',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

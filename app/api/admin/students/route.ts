@@ -113,3 +113,53 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `상벌점 부여 중 오류가 발생했습니다: ${error.message}` }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest) {
+  const session = await getSession(req);
+  if (!session || !session.isAdmin) {
+    return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const { userId, nickname, grade, classNum, studentNum, studentCode, status } = body;
+
+    if (!userId || !nickname) {
+      return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    await query(
+      `UPDATE students 
+       SET nickname = $1, grade = $2, class_no = $3, student_no = $4, student_code = $5, status = $6 
+       WHERE user_id = $7`,
+      [
+        nickname.trim(),
+        parseInt(grade, 10) || 1,
+        parseInt(classNum, 10) || 1,
+        parseInt(studentNum, 10) || 1,
+        studentCode.trim(),
+        status || 'active',
+        BigInt(userId),
+      ]
+    );
+
+    await query(
+      `INSERT INTO audit_logs (admin_id, admin_name, action, target_id, details, created_at)
+       VALUES ($1, $2, '학적수정', $3, $4, $5)`,
+      [
+        BigInt(session.userId),
+        session.username,
+        BigInt(userId),
+        `학생 정보 수정: ${nickname} (학번: ${studentCode}, 상태: ${status})`,
+        nowSeconds,
+      ]
+    );
+
+    return NextResponse.json({ success: true, message: '학생 정보가 성공적으로 수정되었습니다.' });
+  } catch (error: any) {
+    console.error('Update student error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

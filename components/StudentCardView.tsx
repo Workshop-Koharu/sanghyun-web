@@ -1,9 +1,23 @@
 'use client';
 
-import { BookOpen, QrCode } from 'lucide-react';
+import { useState } from 'react';
+import {
+  BookOpen,
+  QrCode,
+  RotateCw,
+  Sparkles,
+  Calendar,
+  Award,
+  CheckCircle2,
+  Clock,
+  Compass,
+  Heart,
+  Quote,
+} from 'lucide-react';
 
 interface StudentProps {
   student: {
+    user_id: string;
     student_id: string;
     real_name: string;
     grade: number;
@@ -11,9 +25,8 @@ interface StudentProps {
     student_num: number;
     club_name?: string | null;
     status: string;
-    enrolled_at: string;
+    enrolled_at: string | number;
     birthday?: string | null;
-    character_type?: string | null;
     mbti?: string | null;
     one_line?: string | null;
     hobby?: string | null;
@@ -22,14 +35,25 @@ interface StudentProps {
     level: number;
     exp: number;
     total_exp: number;
+    message_count?: number;
+    voice_seconds?: number;
   };
   user: {
     username: string;
     avatar: string | null;
   };
+  history?: Array<{
+    id: number;
+    event_type: string;
+    from_value: string;
+    to_value: string;
+    created_at: number;
+  }>;
 }
 
-export default function StudentCardView({ student, level, user }: StudentProps) {
+export default function StudentCardView({ student, level, user, history = [] }: StudentProps) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
   if (!student) {
     return (
       <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-center max-w-md mx-auto shadow-sm">
@@ -38,92 +62,226 @@ export default function StudentCardView({ student, level, user }: StudentProps) 
         </div>
         <h3 className="text-base font-bold text-slate-900 dark:text-white">학생 정보가 등록되지 않았습니다</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          디스코드 서버에서 <code className="text-blue-600 dark:text-blue-400 font-mono">/입학</code> 명령어로 입학을 완료해 주세요.
+          디스코드 서버에서 <code className="text-blue-600 dark:text-blue-400 font-mono">/학교 입학</code> 명령어로 입학을 완료해 주세요.
         </p>
       </div>
     );
   }
 
-  const expNeeded = level.level * 100;
-  const progressPercent = Math.min(100, Math.floor((level.exp / expNeeded) * 100));
+  const expNeeded = (level.level || 1) * 100;
+  const progressPercent = Math.min(100, Math.floor(((level.exp || 0) / expNeeded) * 100));
+
+  const enrollDate = student.enrolled_at
+    ? new Date(Number(student.enrolled_at) * 1000).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '2026년 3월 3일';
+
+  // Build events for timeline
+  const timelineEvents = [
+    {
+      title: '상현고등학교 공식 입학',
+      date: enrollDate,
+      desc: `${student.grade}학년 ${student.class_num}반 ${student.student_num}번 배정`,
+      icon: Award,
+      badge: '입학 완료',
+      color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60',
+    },
+    ...history.map((h) => {
+      const hDate = new Date(Number(h.created_at) * 1000).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      let title = '학적 변동';
+      if (h.event_type === 'promote') title = '학년 진급';
+      if (h.event_type === 'class_change') title = '학급 변경';
+      if (h.event_type === 'graduate') title = '상현고등학교 공식 졸업';
+      return {
+        title,
+        date: hDate,
+        desc: `${h.from_value || ''} → ${h.to_value || ''}`,
+        icon: CheckCircle2,
+        badge: h.event_type,
+        color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60',
+      };
+    }),
+  ];
 
   return (
-    <div className="relative max-w-md mx-auto rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
-        <div>
-          <span className="text-[10px] tracking-wider font-mono uppercase text-blue-600 dark:text-blue-400 font-bold">
-            SANGHYUN HIGH SCHOOL
-          </span>
-          <h2 className="text-base font-black tracking-tight text-slate-900 dark:text-white">
-            상현고등학교 학생증
-          </h2>
-        </div>
-        <div className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-mono font-medium border border-emerald-200 dark:border-emerald-800">
-          {student.status === 'enrolled' ? '재학' : student.status}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative">
-          <div className="w-24 h-28 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-            {user.avatar ? (
-              <img src={user.avatar} alt={student.real_name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-2xl font-bold text-slate-400">{student.real_name.slice(0, 1)}</span>
-            )}
-          </div>
-          <div className="absolute -bottom-2 -right-1 bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-700 shadow-sm">
-            Lv.{level.level}
-          </div>
-        </div>
-
-        <div className="flex-1 space-y-1">
-          <div className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-            {student.real_name}
-            {student.mbti && (
-              <span className="text-[11px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
-                {student.mbti}
-              </span>
-            )}
-          </div>
-          <div className="text-xs font-mono text-slate-700 dark:text-slate-300">
-            {student.grade}학년 {student.class_num}반 {student.student_num}번
-          </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-            학번: <span className="text-slate-800 dark:text-slate-200 font-semibold">{student.student_id}</span>
-          </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            동아리: <span className="text-slate-800 dark:text-slate-200">{student.club_name || '미배정'}</span>
-          </div>
-        </div>
-      </div>
-
-      {student.one_line && (
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 border border-slate-200 dark:border-slate-800 mb-3 text-xs text-slate-600 dark:text-slate-300">
-          "{student.one_line}"
-        </div>
-      )}
-
-      <div className="mb-4 space-y-1">
-        <div className="flex justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
-          <span>경험치</span>
-          <span>{level.exp} / {expNeeded} EXP ({progressPercent}%)</span>
-        </div>
-        <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+    <div className="space-y-8 max-w-lg mx-auto">
+      {/* 3D Apple Wallet Interactive Flip Card */}
+      <div className="flex flex-col items-center">
+        <div
+          onClick={() => setIsFlipped(!isFlipped)}
+          className="relative w-full h-[320px] sm:h-[340px] cursor-pointer select-none [perspective:1200px]"
+        >
           <div
-            className="h-full bg-blue-600 dark:bg-blue-500 rounded-full"
-            style={{ width: `${progressPercent}%` }}
-          />
+            className={`relative w-full h-full rounded-2xl transition-all duration-700 [transform-style:preserve-3d] shadow-2xl border border-white/20 ${
+              isFlipped ? '[transform:rotateY(180deg)]' : ''
+            }`}
+          >
+            {/* FRONT CARD */}
+            <div className="absolute inset-0 w-full h-full rounded-2xl p-6 [backface-visibility:hidden] bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#1E3A8A] text-white flex flex-col justify-between overflow-hidden">
+              {/* Holographic shimmer foil sweep overlay */}
+              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-45 pointer-events-none animate-pulse" />
+
+              <div className="flex items-center justify-between border-b border-white/10 pb-3 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/40 flex items-center justify-center font-bold text-xs text-blue-300">
+                    상
+                  </div>
+                  <div>
+                    <span className="text-[10px] tracking-widest uppercase font-mono text-blue-400 font-bold block">
+                      SANGHYEON HIGH SCHOOL
+                    </span>
+                    <h2 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
+                      상현고등학교 학생증
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
+                    </h2>
+                  </div>
+                </div>
+                <div className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold border border-emerald-500/30">
+                  {student.status === 'active' || student.status === 'enrolled' ? '재학' : student.status}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-5 my-2 relative z-10">
+                <div className="relative">
+                  <div className="w-24 h-28 rounded-xl overflow-hidden border-2 border-white/20 bg-slate-800 shadow-md flex items-center justify-center">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={student.real_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-slate-400">{student.real_name.slice(0, 1)}</span>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-2 -right-1 bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow border border-amber-300">
+                    Lv.{level.level}
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-1">
+                  <div className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                    {student.real_name}
+                    {student.mbti && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold border border-blue-500/30">
+                        {student.mbti}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs font-mono text-slate-300">
+                    {student.grade}학년 {student.class_num}반 {student.student_num}번
+                  </div>
+                  <div className="text-xs text-slate-400 font-mono">
+                    학번: <span className="text-white font-semibold">{student.student_id}</span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    소속 동아리: <span className="text-blue-300 font-medium">{student.club_name || '미배정'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 relative z-10 pt-2 border-t border-white/10">
+                <div className="flex items-center justify-between text-[11px] text-slate-300 font-mono">
+                  <span>경험치 (Lv.{level.level})</span>
+                  <span>
+                    {level.exp} / {expNeeded} XP ({progressPercent}%)
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-400 to-indigo-400 transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1 mt-1">
+                  <RotateCw className="w-3 h-3 text-blue-400" /> 카드를 터치/클릭하면 뒷면이 뒤집힙니다
+                </div>
+              </div>
+            </div>
+
+            {/* BACK CARD */}
+            <div className="absolute inset-0 w-full h-full rounded-2xl p-6 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-[#0F172A] via-[#1E1E2E] to-[#1E293B] text-white flex flex-col justify-between overflow-hidden">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                <span className="text-xs font-bold text-slate-300">상현고등학교 공식 스마트 학생증</span>
+                <span className="text-[10px] font-mono text-blue-400">DIGITAL CARD PASS</span>
+              </div>
+
+              <div className="space-y-2.5 my-auto text-xs">
+                {student.one_line && (
+                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 flex items-start gap-2">
+                    <Quote className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-semibold block">학생 한마디</span>
+                      <p className="text-slate-200 italic">&ldquo;{student.one_line}&rdquo;</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2 rounded bg-white/5 border border-white/10">
+                    <span className="text-slate-400 block text-[10px]">취미 / 특기</span>
+                    <span className="font-semibold text-slate-200">{student.hobby || '자율 학습'}</span>
+                  </div>
+                  <div className="p-2 rounded bg-white/5 border border-white/10">
+                    <span className="text-slate-400 block text-[10px]">입학일자</span>
+                    <span className="font-semibold text-slate-200">{enrollDate}</span>
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-slate-400 leading-relaxed text-center">
+                  &ldquo;지혜를 닦고 덕성을 길러 세계를 밝히자&rdquo;
+                  <br />
+                  본 증명은 상현고등학교 학생 신분을 확인하는 모바일 공식 학생증입니다.
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-12 bg-white rounded-lg p-1 flex items-center justify-center">
+                    <QrCode className="w-full h-full text-slate-900" />
+                  </div>
+                  <div className="font-mono text-[10px] text-slate-400">
+                    <div className="tracking-widest">||| | |||| | ||||| | ||</div>
+                    <span className="text-slate-300 font-semibold">{student.student_id}</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                  <RotateCw className="w-3 h-3 text-blue-400" /> 앞면으로
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-        <div>
-          <div>발급: {student.enrolled_at ? new Date(student.enrolled_at).toLocaleDateString('ko-KR') : '-'}</div>
-          <div>상현고등학교 교무처</div>
-        </div>
-        <div className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          <QrCode className="w-6 h-6" />
+      {/* 학적 이력 타임라인 (Timeline) */}
+      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          학적 이력 타임라인 (나의 학교생활 연표)
+        </h3>
+
+        <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+          {timelineEvents.map((ev, idx) => {
+            const IconComponent = ev.icon;
+            return (
+              <div key={idx} className="relative group">
+                <div className="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-blue-600 dark:border-blue-400 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    {ev.title}
+                  </h4>
+                  <span className="text-[10px] font-mono text-slate-400">{ev.date}</span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{ev.desc}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
