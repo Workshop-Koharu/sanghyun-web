@@ -81,7 +81,7 @@ export default function AdminPage() {
 
   async function loadSettings() {
     try {
-      const res = await fetch('/api/admin/settings', { cache: 'no-store' });
+      const res = await fetch('/api/admin/settings', { cache: 'no-store', credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setSettings(data.settings || {});
@@ -91,7 +91,7 @@ export default function AdminPage() {
 
   async function loadStudents(query = '') {
     try {
-      const res = await fetch(`/api/admin/students?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
+      const res = await fetch(`/api/admin/students?q=${encodeURIComponent(query)}`, { cache: 'no-store', credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setStudents(data.students || []);
@@ -101,7 +101,7 @@ export default function AdminPage() {
 
   async function loadShopItems() {
     try {
-      const res = await fetch('/api/admin/shop', { cache: 'no-store' });
+      const res = await fetch('/api/admin/shop', { cache: 'no-store', credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setShopItems(data.items || []);
@@ -111,7 +111,7 @@ export default function AdminPage() {
 
   async function loadQuestions() {
     try {
-      const res = await fetch('/api/admin/questions', { cache: 'no-store' });
+      const res = await fetch('/api/admin/questions', { cache: 'no-store', credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setQuestions(data.questions || []);
@@ -127,15 +127,17 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ settings }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setSettingsMsg('설정이 성공적으로 저장되었습니다.');
       } else {
-        setSettingsMsg('설정 저장 실패');
+        setSettingsMsg(`설정 저장 실패: ${data.error || '오류가 발생했습니다.'}`);
       }
     } catch {
-      setSettingsMsg('서버 오류가 발생했습니다.');
+      setSettingsMsg('서버 통신 중 오류가 발생했습니다.');
     } finally {
       setSettingsSaving(false);
     }

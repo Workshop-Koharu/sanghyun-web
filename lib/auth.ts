@@ -86,12 +86,12 @@ export async function checkUserPermissions(
 
         try {
           const settings = await queryOne<{ value: string }>(
-            `SELECT value FROM bot_settings WHERE guild_id = $1 AND key = 'role_teacher'`,
-            [guildId]
+            `SELECT value FROM settings WHERE key = 'role.teacher' OR key = 'role_teacher'`,
+            []
           );
           const councilSetting = await queryOne<{ value: string }>(
-            `SELECT value FROM bot_settings WHERE guild_id = $1 AND key = 'role_council'`,
-            [guildId]
+            `SELECT value FROM settings WHERE key = 'role.council' OR key = 'role_council'`,
+            []
           );
 
           if (settings && roles.includes(settings.value)) {
@@ -147,13 +147,13 @@ export async function checkUserPermissions(
   let studentId: string | null = null;
 
   try {
-    const studentRow = await queryOne<{ student_id: string; status: string }>(
-      `SELECT student_id, status FROM students WHERE user_id = $1`,
-      [userId]
+    const studentRow = await queryOne<{ student_code: string; status: string }>(
+      `SELECT student_code, status FROM students WHERE user_id = $1`,
+      [BigInt(userId)]
     );
 
-    isStudent = !!studentRow && studentRow.status === 'enrolled';
-    studentId = studentRow ? studentRow.student_id : null;
+    isStudent = !!studentRow && (studentRow.status === 'active' || studentRow.status === 'enrolled');
+    studentId = studentRow ? studentRow.student_code : null;
   } catch {
     isStudent = false;
     studentId = null;

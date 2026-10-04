@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session || !session.isAdmin) {
     return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 });
   }
@@ -18,7 +20,7 @@ export async function GET(req: NextRequest) {
     let pIdx = 1;
 
     if (search) {
-      whereClause += ` AND (s.real_name ILIKE $${pIdx} OR s.student_id ILIKE $${pIdx})`;
+      whereClause += ` AND (s.nickname ILIKE $${pIdx} OR s.student_code ILIKE $${pIdx})`;
       params.push(`%${search}%`);
       pIdx++;
     }
@@ -28,38 +30,46 @@ export async function GET(req: NextRequest) {
       pIdx++;
     }
     if (classNum) {
-      whereClause += ` AND s.class_num = $${pIdx}`;
+      whereClause += ` AND s.class_no = $${pIdx}`;
       params.push(parseInt(classNum, 10));
       pIdx++;
     }
 
     const students = await query<any>(
-      `SELECT s.*, 
-              COALESCE(r.merit_points, 0) as merit_points, 
-              COALESCE(r.penalty_points, 0) as penalty_points,
-              COALESCE(w.coins, 0) as coins,
-              COALESCE(l.level, 1) as level,
+      `SELECT s.user_id,
+              s.nickname as real_name,
+              s.grade,
+              s.class_no as class_num,
+              s.student_no as student_num,
+              s.student_code as student_id,
+              s.status,
+              s.created_at as enrolled_at,
+              COALESCE(r.merit_total, 0) as merit_points, 
+              COALESCE(r.demerit_total, 0) as penalty_points,
+              COALESCE(w.balance, 0) as coins,
+              COALESCE(l.level, 0) as level,
               c.name as club_name
        FROM students s
-       LEFT JOIN student_records r ON s.user_id = r.user_id
+       LEFT JOIN discipline_summary r ON s.user_id = r.user_id
        LEFT JOIN wallets w ON s.user_id = w.user_id
        LEFT JOIN levels l ON s.user_id = l.user_id
-       LEFT JOIN clubs c ON s.club_id = c.id
+       LEFT JOIN club_members cm ON s.user_id = cm.user_id
+       LEFT JOIN clubs c ON cm.club_id = c.id
        ${whereClause}
-       ORDER BY s.grade ASC, s.class_num ASC, s.student_num ASC
+       ORDER BY s.grade ASC, s.class_no ASC, s.student_no ASC
        LIMIT 100`,
       params
     );
 
     return NextResponse.json({ students });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Fetch students error:', error);
     return NextResponse.json({ error: '학생 목록을 불러오지 못했습니다.' }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session || !session.isAdmin) {
     return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 });
   }
@@ -77,31 +87,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '점수는 1 이상의 정수여야 합니다.' }, { status: 400 });
     }
 
-    if (type !== 'merit' && type !== 'penalty') {
-      return NextResponse.json({ error: '올바른 상벌점 종류가 아닙니다.' }, { status: 400 });
-    }
+    const kind = type === 'penalty' ? 'demerit' : 'merit';
+    const nowSeconds = Math.floor(Date.now() / 1000);
 
-    await query(
-      `INSERT INTO discipline_logs (user_id, teacher_id, points, type, reason, created_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())`,
-      [userId, session.userId, pts, type, reason]
-    );
-
-    const record = await queryOne<any>(
-      `INSERT INTO student_records (user_id, merit_points, penalty_points, updated_at)
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (user_id)
-       DO UPDATE SET 
-         merit_points = student_records.merit_points + $2,
-         penalty_points = student_records.penalty_points + $3,
-         updated_at = NOW()
+    const inserted = await queryOne<any>(
+      `INSERT INTO discipline (user_id, kind, points, reason, issued_by, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, type === 'merit' ? pts : 0, type === 'penalty' ? pts : 0]
+      [BigInt(userId), kind, pts, reason, BigInt(session.userId), nowSeconds]
     );
 
-    return NextResponse.json({ success: true, record });
-  } catch (error) {
+    const summary = await queryOne<any>(
+      `SELECT merit_total as merit_points, demerit_total as penalty_points 
+       FROM discipline_summary 
+       WHERE user_id = $1`,
+      [BigInt(userId)]
+    ) || { merit_points: 0, penalty_points: 0 };
+
+    return NextResponse.json({ success: true, record: summary });
+  } catch (error: any) {
     console.error('Discipline assign error:', error);
-    return NextResponse.json({ error: '상벌점 부여 중 오류가 발생했습니다.' }, { status: 500 });
+    return NextResponse.json({ error: `상벌점 부여 중 오류가 발생했습니다: ${error.message}` }, { status: 500 });
   }
 }
