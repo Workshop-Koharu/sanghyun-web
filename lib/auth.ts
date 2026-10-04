@@ -149,10 +149,10 @@ export async function checkUserPermissions(
   try {
     const studentRow = await queryOne<{ student_code: string; status: string }>(
       `SELECT student_code, status FROM students WHERE user_id = $1`,
-      [BigInt(userId)]
+      [userId]
     );
 
-    isStudent = !!studentRow && (studentRow.status === 'active' || studentRow.status === 'enrolled');
+    isStudent = !!studentRow && studentRow.status !== 'expelled' && studentRow.status !== 'dropped';
     studentId = studentRow ? studentRow.student_code : null;
   } catch {
     isStudent = false;

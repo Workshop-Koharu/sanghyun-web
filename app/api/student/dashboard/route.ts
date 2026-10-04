@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: '인증되지 않은 사용자입니다.' }, { status: 401 });
   }
 
-  const userId = BigInt(session.userId);
+  const userId = session.userId;
 
   try {
     const studentRow = await queryOne<any>(
@@ -47,78 +47,110 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const walletRow = await queryOne<any>(
-      `SELECT balance as coins, lifetime_earned as total_earned, lifetime_spent as total_spent 
-       FROM wallets 
-       WHERE user_id = $1`,
-      [userId]
-    ) || { coins: 0, total_earned: 0, total_spent: 0 };
+    let walletRow = { coins: 0, total_earned: 0, total_spent: 0 };
+    try {
+      const res = await queryOne<any>(
+        `SELECT balance as coins, total_earned, total_spent 
+         FROM wallets 
+         WHERE user_id = $1`,
+        [userId]
+      );
+      if (res) walletRow = res;
+    } catch {}
 
-    const bankRow = await queryOne<any>(
-      `SELECT balance, 0 as total_interest, last_interest_date as last_interest_at 
-       FROM bank_accounts 
-       WHERE user_id = $1`,
-      [userId]
-    ) || { balance: 0, total_interest: 0, last_interest_at: null };
+    let bankRow = { balance: 0, total_interest: 0, last_interest_at: null };
+    try {
+      const res = await queryOne<any>(
+        `SELECT balance, 0 as total_interest, last_interest_date as last_interest_at 
+         FROM bank_accounts 
+         WHERE user_id = $1`,
+        [userId]
+      );
+      if (res) bankRow = res;
+    } catch {}
 
-    const levelRow = await queryOne<any>(
-      `SELECT level, xp as exp, xp as total_exp 
-       FROM levels 
-       WHERE user_id = $1`,
-      [userId]
-    ) || { level: 0, exp: 0, total_exp: 0 };
+    let levelRow = { level: 0, exp: 0, total_exp: 0 };
+    try {
+      const res = await queryOne<any>(
+        `SELECT level, xp as exp, xp as total_exp 
+         FROM levels 
+         WHERE user_id = $1`,
+        [userId]
+      );
+      if (res) levelRow = res;
+    } catch {}
 
-    const recordRow = await queryOne<any>(
-      `SELECT merit_total as merit_points, demerit_total as penalty_points 
-       FROM discipline_summary 
-       WHERE user_id = $1`,
-      [userId]
-    ) || { merit_points: 0, penalty_points: 0 };
+    let recordRow = { merit_points: 0, penalty_points: 0 };
+    try {
+      const res = await queryOne<any>(
+        `SELECT merit_total as merit_points, demerit_total as penalty_points 
+         FROM discipline_summary 
+         WHERE user_id = $1`,
+        [userId]
+      );
+      if (res) recordRow = res;
+    } catch {}
 
-    const attendanceStats = await queryOne<any>(
-      `SELECT COUNT(*)::INT as total_days, 
-              COALESCE(MAX(streak), 0)::INT as max_streak,
-              COALESCE((SELECT streak FROM attendance WHERE user_id = $1 ORDER BY date DESC LIMIT 1), 0)::INT as current_streak,
-              (SELECT date FROM attendance WHERE user_id = $1 ORDER BY date DESC LIMIT 1) as last_attendance_date
-       FROM attendance 
-       WHERE user_id = $1`,
-      [userId]
-    ) || { total_days: 0, current_streak: 0, max_streak: 0, last_attendance_date: null };
+    let attendanceStats = { total_days: 0, current_streak: 0, max_streak: 0, last_attendance_date: null };
+    try {
+      const res = await queryOne<any>(
+        `SELECT COUNT(*)::INT as total_days, 
+                COALESCE(MAX(streak), 0)::INT as max_streak,
+                COALESCE((SELECT streak FROM attendance WHERE user_id = $1 ORDER BY date DESC LIMIT 1), 0)::INT as current_streak,
+                (SELECT date FROM attendance WHERE user_id = $1 ORDER BY date DESC LIMIT 1) as last_attendance_date
+         FROM attendance 
+         WHERE user_id = $1`,
+        [userId]
+      );
+      if (res) attendanceStats = res;
+    } catch {}
 
-    const recentAttendance = await query<any>(
-      `SELECT date, streak as consecutive_days, points as reward_coins, bonus as reward_exp 
-       FROM attendance 
-       WHERE user_id = $1 
-       ORDER BY date DESC 
-       LIMIT 31`,
-      [userId]
-    );
+    let recentAttendance: any[] = [];
+    try {
+      recentAttendance = await query<any>(
+        `SELECT date, streak as consecutive_days, base_points as reward_coins, bonus_points as reward_exp 
+         FROM attendance 
+         WHERE user_id = $1 
+         ORDER BY date DESC 
+         LIMIT 31`,
+        [userId]
+      );
+    } catch {}
 
-    const inventory = await query<any>(
-      `SELECT i.item_id, i.count as quantity, i.acquired_at, s.name, s.description, s.category as item_type, s.price 
-       FROM inventory i 
-       JOIN shop_items s ON i.item_id = s.id 
-       WHERE i.user_id = $1 
-       ORDER BY i.acquired_at DESC`,
-      [userId]
-    );
+    let inventory: any[] = [];
+    try {
+      inventory = await query<any>(
+        `SELECT i.item_id, i.quantity, i.updated_at as acquired_at, s.name, s.description, s.category as item_type, s.price 
+         FROM inventory i 
+         JOIN shop_items s ON i.item_id = s.id 
+         WHERE i.user_id = $1 
+         ORDER BY i.updated_at DESC`,
+        [userId]
+      );
+    } catch {}
 
-    const disciplineLogs = await query<any>(
-      `SELECT id, issued_by as teacher_id, points, kind as type, reason, created_at 
-       FROM discipline 
-       WHERE user_id = $1 
-       ORDER BY created_at DESC 
-       LIMIT 20`,
-      [userId]
-    );
+    let disciplineLogs: any[] = [];
+    try {
+      disciplineLogs = await query<any>(
+        `SELECT id, issued_by as teacher_id, points, kind as type, reason, created_at 
+         FROM discipline 
+         WHERE user_id = $1 
+         ORDER BY created_at DESC 
+         LIMIT 20`,
+        [userId]
+      );
+    } catch {}
 
-    const unlockedAchievements = await query<any>(
-      `SELECT achievement_id, achieved_at as unlocked_at 
-       FROM achievements_owned 
-       WHERE user_id = $1 
-       ORDER BY achieved_at DESC`,
-      [userId]
-    );
+    let unlockedAchievements: any[] = [];
+    try {
+      unlockedAchievements = await query<any>(
+        `SELECT achievement_id, unlocked_at 
+         FROM user_achievements 
+         WHERE user_id = $1 
+         ORDER BY unlocked_at DESC`,
+        [userId]
+      );
+    } catch {}
 
     return NextResponse.json({
       student,

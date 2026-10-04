@@ -48,16 +48,19 @@ export async function GET(req: NextRequest) {
               COALESCE(r.demerit_total, 0) as penalty_points,
               COALESCE(w.balance, 0) as coins,
               COALESCE(l.level, 0) as level,
-              c.name as club_name
+              c.club_name
        FROM students s
        LEFT JOIN discipline_summary r ON s.user_id = r.user_id
        LEFT JOIN wallets w ON s.user_id = w.user_id
        LEFT JOIN levels l ON s.user_id = l.user_id
-       LEFT JOIN club_members cm ON s.user_id = cm.user_id
-       LEFT JOIN clubs c ON cm.club_id = c.id
+       LEFT JOIN (
+         SELECT cm.user_id, STRING_AGG(cl.name, ', ') as club_name
+         FROM club_members cm
+         JOIN clubs cl ON cm.club_id = cl.id
+         GROUP BY cm.user_id
+       ) c ON s.user_id = c.user_id
        ${whereClause}
-       ORDER BY s.grade ASC, s.class_no ASC, s.student_no ASC
-       LIMIT 100`,
+       ORDER BY s.grade ASC, s.class_no ASC, s.student_no ASC`,
       params
     );
 
