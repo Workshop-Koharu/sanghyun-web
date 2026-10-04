@@ -27,8 +27,10 @@ const SCHEDULE_SLOTS: PeriodSlot[] = [
   { startHour: 14, startMin: 50, endHour: 15, endMin: 40, label: '6교시 수업', isClass: true },
   { startHour: 15, startMin: 40, endHour: 15, endMin: 50, label: '쉬는시간 (10분)', isClass: false },
   { startHour: 15, startMin: 50, endHour: 16, endMin: 40, label: '7교시 수업', isClass: true },
-  { startHour: 16, startMin: 40, endHour: 17, endMin: 0, label: '종례 및 학급 청소', isClass: false },
-  { startHour: 17, startMin: 0, endHour: 21, endMin: 0, label: '방과후학교 및 야간자율학습', isClass: false },
+  { startHour: 16, startMin: 40, endHour: 16, endMin: 50, label: '쉬는시간 (10분)', isClass: false },
+  { startHour: 16, startMin: 50, endHour: 17, endMin: 40, label: '8교시 방과후 심화수업', isClass: true },
+  { startHour: 17, startMin: 40, endHour: 18, endMin: 0, label: '종례 및 학급 청소', isClass: false },
+  { startHour: 18, startMin: 0, endHour: 21, endMin: 0, label: '석식 및 야간자율학습 (야자)', isClass: false },
 ];
 
 export default function BellScheduleWidget() {
