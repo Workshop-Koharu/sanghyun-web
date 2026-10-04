@@ -49,10 +49,6 @@ export default function RootLayout({
               <p className="mt-0.5 text-slate-400">Sanghyun High School. All rights reserved.</p>
             </div>
             <div className="flex items-center gap-3 text-slate-400">
-              <a href="https://github.com/Workshop-Koharu" target="_blank" rel="noreferrer" className="hover:text-slate-700 dark:hover:text-white transition-colors">
-                GitHub
-              </a>
-              <span>●</span>
               <span>서버 ID: 1528353970714841110</span>
             </div>
           </div>
