@@ -175,3 +175,12 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   scrollbar-width: thin;
   scrollbar-color: oklch(100% 0 0 / 0.15) transparent;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

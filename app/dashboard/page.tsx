@@ -174,11 +174,11 @@ export default function DashboardPage() {
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <SanghyunLogo size={24} />
-            상현고등학교 학생 포털
+          <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <SanghyunLogo size={24} className="shrink-0" />
+            <span>상현고등학교 학생 포털</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
             {data?.student ? (
               <span>
                 {data.student.grade}학년 {data.student.class_num}반 {data.student.student_num}번 {data.student.real_name} 학생
@@ -198,10 +198,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium overflow-x-auto max-w-full no-scrollbar">
           <button
             onClick={() => setActiveTab('card')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'card'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -212,7 +212,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('timetable')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'timetable'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -223,7 +223,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('attendance')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'attendance'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -234,7 +234,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('wallet')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'wallet'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -245,7 +245,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('club')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'club'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -256,7 +256,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('insta')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'insta'
                 ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -267,7 +267,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('friends')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'friends'
                 ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -278,7 +278,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('suggestions')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'suggestions'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -289,7 +289,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('notices')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'notices'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -300,7 +300,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('leaderboard')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'leaderboard'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -311,7 +311,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('discipline')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'discipline'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -322,7 +322,7 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'achievements'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

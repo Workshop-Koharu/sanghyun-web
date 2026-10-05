@@ -274,31 +274,31 @@ export default function StudentCardView({ student, level, user, history = [] }: 
             }`}
           >
             {/* FRONT CARD */}
-            <div className="absolute inset-0 w-full h-full rounded-2xl p-6 [backface-visibility:hidden] bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#1E3A8A] text-white flex flex-col justify-between overflow-hidden">
+            <div className="absolute inset-0 w-full h-full rounded-2xl p-4 sm:p-6 [backface-visibility:hidden] bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#1E3A8A] text-white flex flex-col justify-between overflow-hidden">
               {/* Holographic shimmer foil sweep overlay */}
               <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-45 pointer-events-none animate-pulse" />
 
-              <div className="flex items-center justify-between border-b border-white/10 pb-3 relative z-10">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2 sm:pb-3 relative z-10">
                 <div className="flex items-center gap-2">
-                  <SanghyunLogo size={32} />
+                  <SanghyunLogo size={28} />
                   <div>
-                    <span className="text-[10px] tracking-widest uppercase font-mono text-blue-400 font-bold block">
+                    <span className="text-[9px] sm:text-[10px] tracking-widest uppercase font-mono text-blue-400 font-bold block">
                       SANGHYUN HIGH SCHOOL
                     </span>
-                    <h2 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
+                    <h2 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5">
                       상현고등학교 학생증
                       <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
                     </h2>
                   </div>
                 </div>
-                <div className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold border border-emerald-500/30">
+                <div className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] sm:text-[11px] font-mono font-bold border border-emerald-500/30">
                   {student.status === 'active' || student.status === 'enrolled' ? '재학' : student.status}
                 </div>
               </div>
 
-              <div className="flex items-center gap-5 my-2 relative z-10">
-                <div className="relative">
-                  <div className="w-24 h-28 rounded-xl overflow-hidden border-2 border-white/20 bg-slate-800 shadow-md flex items-center justify-center">
+              <div className="flex items-center gap-3 sm:gap-5 my-1 sm:my-2 relative z-10">
+                <div className="relative shrink-0">
+                  <div className="w-20 sm:w-24 h-24 sm:h-28 rounded-xl overflow-hidden border-2 border-white/20 bg-slate-800 shadow-md flex items-center justify-center">
                     {(student.avatar_url || user?.avatar) ? (
                       <img
                         src={student.avatar_url || user?.avatar || ''}
@@ -320,22 +320,22 @@ export default function StudentCardView({ student, level, user, history = [] }: 
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-1">
-                  <div className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                    {student.real_name}
+                <div className="flex-1 space-y-1 min-w-0">
+                  <div className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2 truncate">
+                    <span>{student.real_name}</span>
                     {student.mbti && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold border border-blue-500/30">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold border border-blue-500/30 shrink-0">
                         {student.mbti}
                       </span>
                     )}
                   </div>
-                  <div className="text-xs font-mono text-slate-300">
+                  <div className="text-xs font-mono text-slate-300 truncate">
                     {student.grade}학년 {student.class_num}반 {student.student_num}번
                   </div>
-                  <div className="text-xs text-slate-400 font-mono">
+                  <div className="text-xs text-slate-400 font-mono truncate">
                     학번: <span className="text-white font-semibold">{student.student_id}</span>
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-slate-400 truncate">
                     소속 동아리: <span className="text-blue-300 font-medium">{student.club_name || '미배정'}</span>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export default function StudentCardView({ student, level, user, history = [] }: 
             </div>
 
             {/* BACK CARD */}
-            <div className="absolute inset-0 w-full h-full rounded-2xl p-6 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-[#0F172A] via-[#1E1E2E] to-[#1E293B] text-white flex flex-col justify-between overflow-hidden">
+            <div className="absolute inset-0 w-full h-full rounded-2xl p-4 sm:p-6 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-[#0F172A] via-[#1E1E2E] to-[#1E293B] text-white flex flex-col justify-between overflow-hidden">
               <div className="flex items-center justify-between border-b border-white/10 pb-2">
                 <span className="text-xs font-bold text-slate-300">상현고등학교 공식 스마트 학생증</span>
                 <span className="text-[10px] font-mono text-blue-400">DIGITAL CARD PASS</span>

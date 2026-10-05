@@ -57,19 +57,17 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="bg-background/70 sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border/70 px-4 backdrop-blur-xl lg:px-8 transition-colors">
-      <div className="max-w-[88rem] w-full mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <SanghyunLogo size={36} />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-tight text-foreground">
-                상현고등학교
-              </span>
-              <span className="text-[10px] font-mono tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border/60">
-                SANGHYUN
-              </span>
-            </div>
+    <header className="bg-background/90 sticky top-0 z-50 flex h-14 items-center border-b border-border/70 px-3 sm:px-6 backdrop-blur-xl transition-colors">
+      <div className="max-w-[88rem] w-full mx-auto flex items-center justify-between gap-2">
+        <Link href="/" className="flex items-center gap-2 group shrink-0 min-w-0">
+          <SanghyunLogo size={30} className="shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-extrabold text-sm sm:text-base tracking-tight text-foreground whitespace-nowrap">
+              상현고등학교
+            </span>
+            <span className="hidden sm:inline-block text-[10px] font-mono tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border/60 shrink-0">
+              SANGHYUN
+            </span>
           </div>
         </Link>
 
@@ -98,53 +96,61 @@ export default function Navbar() {
           )}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* PWA Install Button (desktop/tablet, mobile is in drawer) */}
           <button
             onClick={() => {
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('sanghyun-trigger-pwa-install'));
               }
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 shadow-sm"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 shadow-sm"
             title="상현고 공식 앱 설치하기"
           >
             <Download className="size-3.5" />
-            <span className="hidden sm:inline">앱 설치</span>
+            <span>앱 설치</span>
           </button>
+
           <ThemeToggle />
 
           {loading ? (
-            <div className="w-20 h-8 bg-muted/50 animate-pulse rounded-xl" />
+            <div className="w-8 h-8 bg-muted/50 animate-pulse rounded-full" />
           ) : user ? (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-secondary/80 border border-border/70 text-xs">
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.username}
-                    referrerPolicy="no-referrer"
-                    className="size-6 rounded-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null;
-                      target.src = getDefaultDiscordAvatar(user.userId);
-                    }}
-                  />
-                ) : (
-                  <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-                    {user.username.charAt(0)}
-                  </div>
-                )}
-                <div className="hidden sm:block text-left leading-tight">
-                  <div className="font-bold text-foreground truncate max-w-[100px]">{user.username}</div>
-                  <div className="text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-secondary/80 hover:bg-secondary border border-border/70 text-xs transition-colors"
+                title={`${user.username} 학생 포털 바로가기`}
+              >
+                <div className="size-7 rounded-full overflow-hidden bg-primary/10 shrink-0 flex items-center justify-center border border-border/50">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      referrerPolicy="no-referrer"
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = getDefaultDiscordAvatar(user.userId);
+                      }}
+                    />
+                  ) : (
+                    <span className="font-bold text-xs text-primary">
+                      {user.username.charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <div className="hidden sm:block text-left leading-tight max-w-[90px]">
+                  <div className="font-bold text-foreground truncate text-xs">{user.username}</div>
+                  <div className="text-[10px] text-muted-foreground truncate">
                     {user.isAdmin ? '교무 교직원' : user.isStudent ? '재학생' : '방문자'}
                   </div>
                 </div>
-              </div>
+              </Link>
               <a
                 href="/api/auth/logout"
-                className="p-1.5 rounded-xl text-muted-foreground hover:text-danger hover:bg-danger/10 border border-transparent hover:border-danger/30 transition-colors"
+                className="hidden md:flex p-1.5 rounded-xl text-muted-foreground hover:text-danger hover:bg-danger/10 border border-transparent hover:border-danger/30 transition-colors"
                 title="로그아웃"
               >
                 <LogOut className="size-4" />
@@ -156,68 +162,101 @@ export default function Navbar() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 shadow-sm transition-all active:scale-95"
             >
               <LogIn className="size-3.5" />
-              로그인
+              <span>로그인</span>
             </a>
           )}
 
           {/* Mobile Hamburger Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-            aria-label="메뉴 열기"
+            className="md:hidden size-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
           >
-            {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {isMobileMenuOpen ? <X className="size-5 text-primary" /> : <Menu className="size-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation Menu */}
+      {/* Mobile Navigation Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-14 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border shadow-2xl p-4 space-y-2 animate-in slide-in-from-top-2">
-          <Link
-            href="/"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
-          >
-            <School className="size-4 text-primary" />
-            학교 안내
-          </Link>
-          <Link
-            href="/dashboard"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
-          >
-            <BookOpen className="size-4 text-primary" />
-            학생 포털 대시보드
-          </Link>
-          <Link
-            href="/dashboard?tab=insta"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
-          >
-            <Camera className="size-4 text-rose-500" />
-            상현스타그램 피드
-          </Link>
-          <Link
-            href="/dashboard?tab=friends"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
-          >
-            <Users className="size-4 text-indigo-400" />
-            학우·친구 시스템
-          </Link>
-          {user?.isAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-warning bg-warning/10 border border-warning/30 transition-colors"
-            >
-              <Shield className="size-4" />
-              교무실 관리자 콘솔
-            </Link>
-          )}
+        <div className="md:hidden fixed inset-x-0 top-14 bottom-0 bg-background/98 backdrop-blur-2xl z-50 flex flex-col justify-between p-4 overflow-y-auto border-b border-border shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="space-y-2">
+            {user && (
+              <div className="p-3 mb-3 rounded-2xl bg-secondary/80 border border-border flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-10 rounded-full overflow-hidden bg-primary/20 shrink-0 border border-primary/30">
+                    <img
+                      src={user.avatar || getDefaultDiscordAvatar(user.userId)}
+                      alt={user.username}
+                      referrerPolicy="no-referrer"
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getDefaultDiscordAvatar(user.userId);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm text-foreground">{user.username}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {user.isAdmin ? '교무 교직원' : user.isStudent ? '재학생' : '방문자'}
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href="/api/auth/logout"
+                  className="px-3 py-1.5 rounded-xl text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold flex items-center gap-1"
+                >
+                  <LogOut className="size-3.5" />
+                  로그아웃
+                </a>
+              </div>
+            )}
 
-          <div className="pt-2 border-t border-border/50 flex items-center justify-between">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+            >
+              <School className="size-4 text-primary" />
+              학교 안내 (홈)
+            </Link>
+            <Link
+              href="/dashboard"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+            >
+              <BookOpen className="size-4 text-primary" />
+              학생 포털 대시보드
+            </Link>
+            <Link
+              href="/dashboard?tab=insta"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+            >
+              <Camera className="size-4 text-rose-500" />
+              상현스타그램 피드
+            </Link>
+            <Link
+              href="/dashboard?tab=friends"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+            >
+              <Users className="size-4 text-indigo-400" />
+              학우·친구 시스템
+            </Link>
+            {user?.isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-warning bg-warning/10 border border-warning/30 transition-colors"
+              >
+                <Shield className="size-4" />
+                교무실 관리자 콘솔
+              </Link>
+            )}
+          </div>
+
+          <div className="pt-4 border-t border-border/70 flex items-center justify-between mt-auto">
             <span className="text-[11px] text-muted-foreground">상현고등학교 공식 스마트 인트라넷</span>
             <button
               onClick={() => {
@@ -226,9 +265,9 @@ export default function Navbar() {
                 }
                 setIsMobileMenuOpen(false);
               }}
-              className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[11px] font-bold flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-sm"
             >
-              <Download className="size-3" />
+              <Download className="size-3.5" />
               앱 설치
             </button>
           </div>
