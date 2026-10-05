@@ -388,7 +388,15 @@ export default function InstaFeedWidget() {
             >
               <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full rounded-full border-2 border-background overflow-hidden bg-slate-800">
-                  <img src={p.image_url} alt={p.author_name} className="w-full h-full object-cover" />
+                  <img
+                    src={p.image_url}
+                    alt={p.author_name}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&auto=format&fit=crop';
+                    }}
+                  />
                 </div>
               </div>
               <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground truncate max-w-[60px]">
@@ -458,8 +466,12 @@ export default function InstaFeedWidget() {
                 <img
                   src={post.image_url}
                   alt={post.caption}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
                   loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop';
+                  }}
                 />
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                   <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold flex items-center gap-1.5">
@@ -571,7 +583,11 @@ export default function InstaFeedWidget() {
               <img
                 src={selectedPost.image_url}
                 alt={selectedPost.caption}
+                referrerPolicy="no-referrer"
                 className="max-h-[75vh] w-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200&auto=format&fit=crop';
+                }}
               />
               <button
                 onClick={() => setSelectedPost(null)}

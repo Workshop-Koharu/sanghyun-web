@@ -17,6 +17,8 @@ export interface UserSession {
   studentId?: string | null;
 }
 
+export { getDefaultDiscordAvatar } from './avatar';
+
 export function getBaseUrl(req?: Request | NextRequest): string {
   if (req) {
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host');

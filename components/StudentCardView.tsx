@@ -13,10 +13,11 @@ import {
   Quote,
 } from 'lucide-react';
 import SanghyunLogo from './SanghyunLogo';
+import { getDefaultDiscordAvatar } from '@/lib/avatar';
 
 interface StudentProps {
   student: {
-    user_id: string;
+    user_id: string | number;
     student_id: string;
     real_name: string;
     grade: number;
@@ -29,6 +30,7 @@ interface StudentProps {
     mbti?: string | null;
     one_line?: string | null;
     hobby?: string | null;
+    avatar_url?: string | null;
   } | null;
   level: {
     level: number;
@@ -40,7 +42,7 @@ interface StudentProps {
   user: {
     username: string;
     avatar: string | null;
-  };
+  } | null;
   history?: Array<{
     id: number;
     event_type: string;
@@ -297,8 +299,18 @@ export default function StudentCardView({ student, level, user, history = [] }: 
               <div className="flex items-center gap-5 my-2 relative z-10">
                 <div className="relative">
                   <div className="w-24 h-28 rounded-xl overflow-hidden border-2 border-white/20 bg-slate-800 shadow-md flex items-center justify-center">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={student.real_name} className="w-full h-full object-cover" />
+                    {(student.avatar_url || user?.avatar) ? (
+                      <img
+                        src={student.avatar_url || user?.avatar || ''}
+                        alt={student.real_name}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = getDefaultDiscordAvatar(student.user_id);
+                        }}
+                      />
                     ) : (
                       <span className="text-3xl font-black text-slate-400">{student.real_name.slice(0, 1)}</span>
                     )}

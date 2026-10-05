@@ -219,6 +219,7 @@ export default function DiscordSimulator() {
               <img
                 src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&auto=format&fit=crop"
                 alt="인스타"
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
             </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createSessionToken, checkUserPermissions, UserSession, getBaseUrl, COOKIE_NAME } from '@/lib/auth';
+import { createSessionToken, checkUserPermissions, UserSession, getBaseUrl, COOKIE_NAME, getDefaultDiscordAvatar } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,13 +53,36 @@ export async function GET(req: NextRequest) {
     const userData = await userRes.json();
     const permissions = await checkUserPermissions(accessToken, userData.id);
 
+    const botToken = process.env.DISCORD_BOT_TOKEN;
+    const guildId = process.env.GUILD_ID || '1482810006767276182';
+
+    let memberAvatarUrl: string | null = null;
+    try {
+      if (botToken) {
+        const memberRes = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userData.id}`, {
+          headers: { Authorization: `Bot ${botToken}` },
+        });
+        if (memberRes.ok) {
+          const memberData = await memberRes.json();
+          if (memberData.avatar) {
+            memberAvatarUrl = `https://cdn.discordapp.com/guilds/${guildId}/users/${userData.id}/avatars/${memberData.avatar}.png?size=256`;
+          }
+        }
+      }
+    } catch {}
+
+    const defaultAvatarUrl = getDefaultDiscordAvatar(userData.id);
+    const userAvatarUrl = userData.avatar
+      ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png?size=256`
+      : defaultAvatarUrl;
+
+    const finalAvatar = memberAvatarUrl || userAvatarUrl;
+
     const sessionPayload: UserSession = {
       userId: userData.id,
       username: userData.global_name || userData.username,
       discriminator: userData.discriminator,
-      avatar: userData.avatar
-        ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
-        : null,
+      avatar: finalAvatar,
       isAdmin: permissions.isAdmin,
       isStudent: permissions.isStudent,
       studentId: permissions.studentId,

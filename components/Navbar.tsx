@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Shield, User, LogOut, LogIn, School, BookOpen, Download, Menu, X, Camera, Users } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import SanghyunLogo from './SanghyunLogo';
+import { getDefaultDiscordAvatar } from '@/lib/avatar';
 
 interface UserSession {
   userId: string;
@@ -118,7 +119,17 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-secondary/80 border border-border/70 text-xs">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.username} className="size-6 rounded-full" />
+                  <img
+                    src={user.avatar}
+                    alt={user.username}
+                    referrerPolicy="no-referrer"
+                    className="size-6 rounded-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = getDefaultDiscordAvatar(user.userId);
+                    }}
+                  />
                 ) : (
                   <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
                     {user.username.charAt(0)}

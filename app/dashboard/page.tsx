@@ -13,6 +13,7 @@ import InstaFeedWidget from '@/components/InstaFeedWidget';
 import FriendsWidget from '@/components/FriendsWidget';
 import DailyMealWidget from '@/components/DailyMealWidget';
 import SanghyunLogo from '@/components/SanghyunLogo';
+import { getDefaultDiscordAvatar } from '@/lib/avatar';
 import {
   BookOpen,
   CalendarCheck,
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const [profileOneLine, setProfileOneLine] = useState('');
   const [profileMbti, setProfileMbti] = useState('');
   const [profileHobby, setProfileHobby] = useState('');
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export default function DashboardPage() {
             setProfileOneLine(dashData.student.one_line || '');
             setProfileMbti(dashData.student.mbti || '');
             setProfileHobby(dashData.student.hobby || '');
+            setProfileAvatarUrl(dashData.student.avatar_url || '');
           }
         }
       } catch (err) {
@@ -116,6 +119,7 @@ export default function DashboardPage() {
           one_line: profileOneLine,
           mbti: profileMbti,
           hobby: profileHobby,
+          avatar_url: profileAvatarUrl,
         }),
       });
       if (res.ok) {
@@ -128,6 +132,7 @@ export default function DashboardPage() {
               one_line: profileOneLine,
               mbti: profileMbti,
               hobby: profileHobby,
+              avatar_url: profileAvatarUrl || null,
             },
           });
         }
@@ -686,6 +691,77 @@ export default function DashboardPage() {
               <Edit3 className="w-4 h-4 text-blue-600" />
               학생 프로필 정보 수정
             </h3>
+
+            {/* 프로필 증명사진 이미지 설정 */}
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-2.5">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block text-xs">
+                학생증 증명사진 / 프로필 이미지
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-16 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 bg-slate-700 shrink-0 flex items-center justify-center">
+                  {(profileAvatarUrl || user?.avatar) ? (
+                    <img
+                      src={profileAvatarUrl || user?.avatar || ''}
+                      alt="프로필 미리보기"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getDefaultDiscordAvatar(user?.userId);
+                      }}
+                    />
+                  ) : (
+                    <span className="text-xl font-bold text-slate-300">
+                      {data?.student?.real_name?.slice(0, 1) || '학'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 space-y-1.5 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <label className="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-[11px] shadow-sm">
+                      <Camera className="w-3.5 h-3.5" />
+                      내 기기에서 사진 찾기
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert('이미지 파일은 5MB 이하여야 합니다.');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              setProfileAvatarUrl(reader.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </label>
+                    {profileAvatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setProfileAvatarUrl('')}
+                        className="px-2 py-1 text-[11px] text-slate-500 hover:text-rose-500 font-medium"
+                      >
+                        기본 디스코드로 복원
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    value={profileAvatarUrl.startsWith('data:') ? '(업로드된 이미지 파일)' : profileAvatarUrl}
+                    onChange={(e) => setProfileAvatarUrl(e.target.value)}
+                    placeholder="또는 이미지 주소(URL) 직접 입력"
+                    disabled={profileAvatarUrl.startsWith('data:')}
+                    className="w-full px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-3 text-xs">
               <div>

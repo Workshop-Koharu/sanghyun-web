@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
         one_line: introData.one_line || '',
         mbti: introData.mbti || '',
         hobby: introData.hobby || '',
+        avatar_url: introData.avatar_url || null,
       };
     }
 

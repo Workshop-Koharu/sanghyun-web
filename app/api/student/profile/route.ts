@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 });
   }
 
-  const { one_line, mbti, hobby } = body;
+  const { one_line, mbti, hobby, avatar_url } = body;
 
   // Sanitize and enforce strict length bounds
   const cleanOneLine = typeof one_line === 'string' ? one_line.trim().slice(0, 100) : '';
@@ -41,6 +41,16 @@ export async function POST(req: NextRequest) {
     introData.one_line = cleanOneLine;
     introData.mbti = cleanMbti;
     introData.hobby = cleanHobby;
+
+    if (typeof avatar_url === 'string' && avatar_url.trim()) {
+      // Validate url or data image
+      const trimmed = avatar_url.trim();
+      if (trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('data:image/')) {
+        introData.avatar_url = trimmed;
+      }
+    } else if (avatar_url === null || avatar_url === '') {
+      delete introData.avatar_url;
+    }
 
     await query('UPDATE students SET intro_json = $1 WHERE user_id = $2', [JSON.stringify(introData), userId]);
 

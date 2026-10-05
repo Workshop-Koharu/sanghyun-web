@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getSession, getDefaultDiscordAvatar } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +17,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const userAvatar = session.avatar || getDefaultDiscordAvatar(session.userId);
   return NextResponse.json(
     {
       authenticated: true,
-      user: session,
+      user: {
+        ...session,
+        avatar: userAvatar,
+      },
     },
     {
       status: 200,
