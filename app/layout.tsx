@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     title: '상현고등학교',
   },
   icons: {
-    icon: '/icons/icon-192.png',
-    apple: '/icons/icon-192.png',
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
   },
 };
 
@@ -24,10 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" className="dark" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#4F6BED" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <meta name="theme-color" content="#181a24" />
+        <meta name="color-scheme" content="dark" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
           rel="stylesheet"
           as="style"
@@ -39,30 +40,33 @@ export default function RootLayout({
             __html: `
               try {
                 const stored = localStorage.getItem('theme');
-                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                } else {
+                if (stored === 'light') {
                   document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
                 }
               } catch (_) {}
             `,
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+      <body className="min-h-screen flex flex-col antialiased selection:bg-primary selection:text-primary-foreground relative">
+        <div className="app-backdrop" />
         <Navbar />
         <PwaInstallPrompt />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
+        <main className="flex-1 max-w-[88rem] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
           {children}
         </main>
-        <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 px-4 text-center text-xs text-slate-500">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <div className="font-semibold text-slate-700 dark:text-slate-300">상현고등학교 학사 포털</div>
-              <p className="mt-0.5 text-slate-400">Sanghyun High School. All rights reserved.</p>
+        <footer className="border-t border-border/60 bg-card/60 backdrop-blur-xl py-6 px-4 text-center text-xs text-muted-foreground relative z-10 mt-auto">
+          <div className="max-w-[88rem] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-left">
+              <div className="font-bold text-foreground">상현고등학교 공식 학사 포털</div>
+              <p className="mt-0.5 text-muted-foreground">Sanghyun High School • Discord Interactive Campus</p>
             </div>
-            <div className="flex items-center gap-3 text-slate-400">
+            <div className="flex items-center gap-3 text-muted-foreground">
               <span>서버 ID: 1528353970714841110</span>
+              <span>•</span>
+              <span className="text-primary font-medium">Spender Engine Connected</span>
             </div>
           </div>
         </footer>

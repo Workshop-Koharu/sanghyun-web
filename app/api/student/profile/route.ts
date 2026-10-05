@@ -11,8 +11,19 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = session.userId;
-  const body = await req.json();
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 });
+  }
+
   const { one_line, mbti, hobby } = body;
+
+  // Sanitize and enforce strict length bounds
+  const cleanOneLine = typeof one_line === 'string' ? one_line.trim().slice(0, 100) : '';
+  const cleanMbti = typeof mbti === 'string' ? mbti.trim().toUpperCase().slice(0, 4) : '';
+  const cleanHobby = typeof hobby === 'string' ? hobby.trim().slice(0, 50) : '';
 
   try {
     const student = await queryOne<any>('SELECT intro_json FROM students WHERE user_id = $1', [userId]);
@@ -27,9 +38,9 @@ export async function POST(req: NextRequest) {
       } catch {}
     }
 
-    introData.one_line = one_line || '';
-    introData.mbti = mbti || '';
-    introData.hobby = hobby || '';
+    introData.one_line = cleanOneLine;
+    introData.mbti = cleanMbti;
+    introData.hobby = cleanHobby;
 
     await query('UPDATE students SET intro_json = $1 WHERE user_id = $2', [JSON.stringify(introData), userId]);
 

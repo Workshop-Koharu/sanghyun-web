@@ -211,9 +211,9 @@ export async function POST(req: NextRequest) {
     // Queue web action for bot as well
     try {
       await query(
-        `INSERT INTO web_actions (action, payload, status, created_at)
-         VALUES ($1, $2, 'pending', $3)`,
-        [action === 'approve' ? 'approve_club' : 'disband_club', JSON.stringify({ club_id: clubId }), now]
+        `INSERT INTO web_actions (action, payload, requested_by, status, created_at)
+         VALUES ($1, $2, $3, 'pending', $4)`,
+        [action === 'approve' ? 'approve_club' : 'disband_club', JSON.stringify({ club_id: clubId }), BigInt(session.userId), now]
       );
     } catch (_) {}
 

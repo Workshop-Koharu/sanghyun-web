@@ -11,10 +11,11 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get('date');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '30', 10), 100);
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10), 1), 100);
 
     const todayKST = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-    const targetDate = dateParam || todayKST;
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const targetDate = (dateParam && dateRegex.test(dateParam)) ? dateParam : todayKST;
 
     const photos = await query<any>(
       `SELECT mp.id, mp.user_id, mp.author_name, mp.grade, mp.class_no,
@@ -59,16 +60,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
+  let body: any;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 });
+  }
+
+  try {
     const userId = BigInt(session.userId);
     const now = Math.floor(Date.now() / 1000);
 
     // 1. Toggle Like
     if (body.action === 'like') {
-      const { photoId } = body;
-      if (!photoId) {
-        return NextResponse.json({ error: '사진 ID가 누락되었습니다.' }, { status: 400 });
+      const photoId = parseInt(String(body.photoId), 10);
+      if (isNaN(photoId) || photoId <= 0) {
+        return NextResponse.json({ error: '유효한 사진 ID가 아닙니다.' }, { status: 400 });
       }
 
       const existingLike = await queryOne<any>(
@@ -99,8 +106,16 @@ export async function POST(req: NextRequest) {
 
     // 2. Upload / Post Meal Photo
     const { imageUrl, comment, mealType } = body;
-    if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
-      return NextResponse.json({ error: '올바른 사진 이미지 URL을 입력해주세요.' }, { status: 400 });
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return NextResponse.json({ error: '사진 이미지 URL을 입력해주세요.' }, { status: 400 });
+    }
+
+    const trimmedUrl = imageUrl.trim();
+    if (!trimmedUrl.startsWith('https://') && !trimmedUrl.startsWith('http://')) {
+      return NextResponse.json({ error: '올바른 웹 URL (https://) 형식이어야 합니다.' }, { status: 400 });
+    }
+    if (trimmedUrl.length > 1000) {
+      return NextResponse.json({ error: 'URL 길이가 너무 깁니다.' }, { status: 400 });
     }
 
     // Get student profile info
@@ -109,18 +124,19 @@ export async function POST(req: NextRequest) {
       [userId]
     );
 
-    const authorName = student?.nickname || session.username || '상현고 학생';
+    const authorName = (student?.nickname || session.username || '상현고 학생').slice(0, 32);
     const grade = student?.grade || 1;
     const classNo = student?.class_no || 1;
     const todayKST = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-    const cleanComment = (comment || '').trim().slice(0, 200);
-    const mType = (mealType || '중식').slice(0, 10);
+    const cleanComment = (typeof comment === 'string' ? comment.trim() : '').slice(0, 200);
+    const allowedMealTypes = ['조식', '중식', '석식', '간식'];
+    const mType = typeof mealType === 'string' && allowedMealTypes.includes(mealType) ? mealType : '중식';
 
     const inserted = await queryOne<any>(
       `INSERT INTO meal_photos (user_id, author_name, grade, class_no, image_url, comment, meal_date, meal_type, likes, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9)
        RETURNING id, user_id, author_name, grade, class_no, image_url, comment, meal_date, meal_type, likes, created_at`,
-      [userId, authorName, grade, classNo, imageUrl.trim(), cleanComment, todayKST, mType, now]
+      [userId, authorName, grade, classNo, trimmedUrl, cleanComment, todayKST, mType, now]
     );
 
     // Give reward bonus to student for contributing to meal feed

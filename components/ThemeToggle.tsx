@@ -18,14 +18,8 @@ export default function ThemeToggle() {
         document.documentElement.classList.remove('dark');
       }
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initial = prefersDark ? 'dark' : 'light';
-      setTheme(initial);
-      if (initial === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
     }
   }, []);
 
@@ -41,20 +35,20 @@ export default function ThemeToggle() {
   };
 
   if (!mounted) {
-    return <div className="w-8 h-8 rounded-lg" />;
+    return <div className="size-8 rounded-xl" />;
   }
 
   return (
     <button
       onClick={toggleTheme}
       type="button"
-      aria-label="화면 모드 전환"
-      className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors"
+      aria-label="화면 테마 모드 전환"
+      className="size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground bg-secondary/80 hover:bg-accent/80 border border-border/70 transition-all active:scale-95"
     >
       {theme === 'dark' ? (
-        <Sun className="w-4 h-4 text-amber-400" />
+        <Sun className="size-4 text-amber-400" />
       ) : (
-        <Moon className="w-4 h-4 text-slate-700" />
+        <Moon className="size-4 text-primary" />
       )}
     </button>
   );

@@ -33,16 +33,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
+  let body: any;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 본문 형식입니다.' }, { status: 400 });
+  }
+
+  try {
     const userId = BigInt(session.userId);
     const now = Math.floor(Date.now() / 1000);
 
     // 1. Voting on suggestion
     if (body.action === 'vote') {
-      const { suggestionId } = body;
-      if (!suggestionId) {
-        return NextResponse.json({ error: '건의 ID가 누락되었습니다.' }, { status: 400 });
+      const suggestionId = parseInt(String(body.suggestionId), 10);
+      if (isNaN(suggestionId) || suggestionId <= 0) {
+        return NextResponse.json({ error: '유효한 건의 ID가 아닙니다.' }, { status: 400 });
       }
 
       const existingVote = await queryOne<any>(
@@ -72,29 +78,48 @@ export async function POST(req: NextRequest) {
       if (!session.isAdmin) {
         return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 403 });
       }
-      const { suggestionId, status, admin_response } = body;
+      const suggestionId = parseInt(String(body.suggestionId), 10);
+      if (isNaN(suggestionId) || suggestionId <= 0) {
+        return NextResponse.json({ error: '유효한 건의 ID가 아닙니다.' }, { status: 400 });
+      }
+
+      const allowedStatuses = ['open', 'in_progress', 'resolved', 'rejected'];
+      const status = typeof body.status === 'string' && allowedStatuses.includes(body.status) ? body.status : 'open';
+      const adminResponse = typeof body.admin_response === 'string' ? body.admin_response.trim().slice(0, 1000) : '';
+
       await query(
         'UPDATE student_suggestions SET status = $1, admin_response = $2 WHERE id = $3',
-        [status, admin_response || '', suggestionId]
+        [status, adminResponse, suggestionId]
       );
       return NextResponse.json({ success: true, message: '건의 상태가 업데이트되었습니다.' });
     }
 
     // 3. New Suggestion submission
-    const { title, content } = body;
-    if (!title || !content) {
-      return NextResponse.json({ error: '제목과 내용을 모두 입력해 주세요.' }, { status: 400 });
+    const rawTitle = typeof body.title === 'string' ? body.title.trim() : '';
+    const rawContent = typeof body.content === 'string' ? body.content.trim() : '';
+
+    if (!rawTitle || rawTitle.length < 2) {
+      return NextResponse.json({ error: '제목은 최소 2자 이상 입력해주세요.' }, { status: 400 });
+    }
+    if (rawTitle.length > 100) {
+      return NextResponse.json({ error: '제목은 최대 100자까지 가능합니다.' }, { status: 400 });
+    }
+    if (!rawContent || rawContent.length < 5) {
+      return NextResponse.json({ error: '내용은 최소 5자 이상 입력해주세요.' }, { status: 400 });
+    }
+    if (rawContent.length > 2000) {
+      return NextResponse.json({ error: '내용은 최대 2,000자까지 입력 가능합니다.' }, { status: 400 });
     }
 
     // Lookup student nickname
     const student = await queryOne<any>('SELECT nickname FROM students WHERE user_id = $1', [userId]);
-    const authorName = student?.nickname || session.username;
+    const authorName = (student?.nickname || session.username || '학생').slice(0, 32);
 
     const inserted = await queryOne<any>(
       `INSERT INTO student_suggestions (user_id, author_name, title, content, upvotes, status, created_at)
        VALUES ($1, $2, $3, $4, 1, 'open', $5)
        RETURNING id`,
-      [userId, authorName, title.trim(), content.trim(), now]
+      [userId, authorName, rawTitle, rawContent, now]
     );
 
     // Auto-vote by author
