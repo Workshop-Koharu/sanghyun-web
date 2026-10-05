@@ -22,6 +22,7 @@ import {
   Wifi,
   ExternalLink,
 } from 'lucide-react';
+import SanghyunLogo from './SanghyunLogo';
 
 interface StudentProps {
   student: {
@@ -288,9 +289,7 @@ export default function StudentCardView({ student, level, user, history = [] }: 
 
               <div className="flex items-center justify-between border-b border-white/10 pb-3 relative z-10">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/40 flex items-center justify-center font-bold text-xs text-blue-300">
-                    상
-                  </div>
+                  <SanghyunLogo size={32} />
                   <div>
                     <span className="text-[10px] tracking-widest uppercase font-mono text-blue-400 font-bold block">
                       SANGHYUN HIGH SCHOOL

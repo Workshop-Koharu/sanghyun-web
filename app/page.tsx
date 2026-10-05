@@ -14,6 +14,7 @@ import {
   Compass,
 } from 'lucide-react';
 import DiscordSimulator from '@/components/DiscordSimulator';
+import SanghyunLogo from '@/components/SanghyunLogo';
 
 export default function Home() {
   return (
@@ -23,6 +24,10 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative z-10 text-center max-w-3xl mx-auto space-y-6 pt-4 pb-2">
+        <div className="flex justify-center mb-1">
+          <SanghyunLogo size={76} showGlow className="shadow-2xl shadow-indigo-500/30 hover:scale-105 transition-transform" />
+        </div>
+
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass border border-white/10 text-xs text-foreground/90 font-medium shadow-sm transition-all hover:border-primary/50">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span className="tracking-wide">상현고등학교 공식 스마트 학사 인트라넷</span>

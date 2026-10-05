@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Shield, User, LogOut, LogIn, School, BookOpen, Download } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import SanghyunLogo from './SanghyunLogo';
 
 interface UserSession {
   userId: string;
@@ -57,9 +58,7 @@ export default function Navbar() {
     <header className="bg-background/70 sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border/70 px-4 backdrop-blur-xl lg:px-8 transition-colors">
       <div className="max-w-[88rem] w-full mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-white shadow-md shadow-primary/25 transition-transform group-hover:scale-105">
-            <School className="size-5" />
-          </div>
+          <SanghyunLogo size={36} />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-base tracking-tight text-foreground">
