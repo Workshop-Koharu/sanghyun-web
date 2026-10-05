@@ -109,6 +109,47 @@ export default function DashboardPage() {
     };
   }, []);
 
+  const switchTab = (tab: any) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  useEffect(() => {
+    const validTabs = [
+      'card', 'timetable', 'attendance', 'wallet', 'club', 'insta', 'friends', 'suggestions', 'notices', 'leaderboard', 'discipline', 'achievements'
+    ];
+
+    const syncUrlTab = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab && validTabs.includes(tab)) {
+          setActiveTab(tab as any);
+        }
+      } catch {}
+    };
+
+    const handleSwitchEvent = (e: any) => {
+      const targetTab = e?.detail;
+      if (targetTab && validTabs.includes(targetTab)) {
+        switchTab(targetTab);
+      }
+    };
+
+    syncUrlTab();
+    window.addEventListener('sanghyun-switch-tab', handleSwitchEvent);
+    window.addEventListener('popstate', syncUrlTab);
+
+    return () => {
+      window.removeEventListener('sanghyun-switch-tab', handleSwitchEvent);
+      window.removeEventListener('popstate', syncUrlTab);
+    };
+  }, []);
+
   const handleSaveProfile = async () => {
     setProfileSaving(true);
     try {
@@ -200,8 +241,9 @@ export default function DashboardPage() {
         {/* Tab switcher */}
         <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium overflow-x-auto max-w-full no-scrollbar">
           <button
-            onClick={() => setActiveTab('card')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('card')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'card'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -211,8 +253,9 @@ export default function DashboardPage() {
             학생증
           </button>
           <button
-            onClick={() => setActiveTab('timetable')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('timetable')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'timetable'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -222,8 +265,9 @@ export default function DashboardPage() {
             시간표
           </button>
           <button
-            onClick={() => setActiveTab('attendance')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('attendance')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'attendance'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -233,8 +277,9 @@ export default function DashboardPage() {
             출석부
           </button>
           <button
-            onClick={() => setActiveTab('wallet')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('wallet')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'wallet'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -244,8 +289,9 @@ export default function DashboardPage() {
             지갑/소지품
           </button>
           <button
-            onClick={() => setActiveTab('club')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('club')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'club'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -255,8 +301,9 @@ export default function DashboardPage() {
             동아리
           </button>
           <button
-            onClick={() => setActiveTab('insta')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('insta')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'insta'
                 ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -266,8 +313,9 @@ export default function DashboardPage() {
             상현스타
           </button>
           <button
-            onClick={() => setActiveTab('friends')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('friends')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'friends'
                 ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -277,8 +325,9 @@ export default function DashboardPage() {
             학우·친구
           </button>
           <button
-            onClick={() => setActiveTab('suggestions')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('suggestions')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'suggestions'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -288,8 +337,9 @@ export default function DashboardPage() {
             학생건의
           </button>
           <button
-            onClick={() => setActiveTab('notices')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('notices')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'notices'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -299,8 +349,9 @@ export default function DashboardPage() {
             학교공지
           </button>
           <button
-            onClick={() => setActiveTab('leaderboard')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('leaderboard')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'leaderboard'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -310,8 +361,9 @@ export default function DashboardPage() {
             명예의전당
           </button>
           <button
-            onClick={() => setActiveTab('discipline')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('discipline')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'discipline'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -321,8 +373,9 @@ export default function DashboardPage() {
             상벌점
           </button>
           <button
-            onClick={() => setActiveTab('achievements')}
-            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            type="button"
+            onClick={() => switchTab('achievements')}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-95 ${
               activeTab === 'achievements'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

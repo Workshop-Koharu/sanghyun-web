@@ -95,6 +95,10 @@ html.dark {
     min-height: 100dvh;
     font-family: var(--font-sans);
   }
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
   ::selection {
     background-color: var(--primary);
     color: var(--primary-foreground);

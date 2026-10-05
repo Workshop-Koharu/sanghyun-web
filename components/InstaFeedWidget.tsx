@@ -772,9 +772,10 @@ export default function InstaFeedWidget() {
                     </div>
                   </div>
                 ) : (
-                  <div
+                  <button
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-video w-full rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/60 bg-secondary/20 hover:bg-secondary/40 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer p-6 text-center group"
+                    className="aspect-video w-full rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/60 bg-secondary/20 hover:bg-secondary/40 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer p-6 text-center group active:scale-98"
                   >
                     <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                       <UploadCloud className="w-5 h-5" />
@@ -785,7 +786,7 @@ export default function InstaFeedWidget() {
                         클릭하여 파일 탐색기에서 사진을 선택하세요 (PNG, JPG, WebP)
                       </p>
                     </div>
-                  </div>
+                  </button>
                 )}
               </div>
 

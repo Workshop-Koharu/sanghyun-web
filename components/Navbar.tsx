@@ -56,6 +56,13 @@ export default function Navbar() {
     };
   }, []);
 
+  const handleNavTab = (tab: string) => {
+    setIsMobileMenuOpen(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sanghyun-switch-tab', { detail: tab }));
+    }
+  };
+
   return (
     <header className="bg-background/90 sticky top-0 z-50 flex h-14 items-center border-b border-border/70 px-3 sm:px-6 backdrop-blur-xl transition-colors">
       <div className="max-w-[88rem] w-full mx-auto flex items-center justify-between gap-2">
@@ -97,18 +104,19 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* PWA Install Button (desktop/tablet, mobile is in drawer) */}
+          {/* PWA Web App Install Button (Visible on both Mobile and Desktop) */}
           <button
+            type="button"
             onClick={() => {
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('sanghyun-trigger-pwa-install'));
               }
             }}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 shadow-sm"
-            title="상현고 공식 앱 설치하기"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 shadow-sm cursor-pointer"
+            title="상현고 공식 웹앱 설치하기"
           >
-            <Download className="size-3.5" />
-            <span>앱 설치</span>
+            <Download className="size-3.5 shrink-0" />
+            <span className="text-[11px] sm:text-xs">앱 설치</span>
           </button>
 
           <ThemeToggle />
@@ -168,8 +176,9 @@ export default function Navbar() {
 
           {/* Mobile Hamburger Toggle Button */}
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden size-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            className="md:hidden size-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors active:scale-95 cursor-pointer"
             aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
           >
             {isMobileMenuOpen ? <X className="size-5 text-primary" /> : <Menu className="size-5" />}
@@ -204,7 +213,7 @@ export default function Navbar() {
                 </div>
                 <a
                   href="/api/auth/logout"
-                  className="px-3 py-1.5 rounded-xl text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-xl text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold flex items-center gap-1 active:scale-95"
                 >
                   <LogOut className="size-3.5" />
                   로그아웃
@@ -215,31 +224,31 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors active:scale-98"
             >
               <School className="size-4 text-primary" />
               학교 안내 (홈)
             </Link>
             <Link
               href="/dashboard"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+              onClick={() => handleNavTab('card')}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors active:scale-98"
             >
               <BookOpen className="size-4 text-primary" />
               학생 포털 대시보드
             </Link>
             <Link
               href="/dashboard?tab=insta"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+              onClick={() => handleNavTab('insta')}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors active:scale-98"
             >
               <Camera className="size-4 text-rose-500" />
               상현스타그램 피드
             </Link>
             <Link
               href="/dashboard?tab=friends"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+              onClick={() => handleNavTab('friends')}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors active:scale-98"
             >
               <Users className="size-4 text-indigo-400" />
               학우·친구 시스템
@@ -248,7 +257,7 @@ export default function Navbar() {
               <Link
                 href="/admin"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-warning bg-warning/10 border border-warning/30 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-warning bg-warning/10 border border-warning/30 transition-colors active:scale-98"
               >
                 <Shield className="size-4" />
                 교무실 관리자 콘솔
@@ -259,13 +268,14 @@ export default function Navbar() {
           <div className="pt-4 border-t border-border/70 flex items-center justify-between mt-auto">
             <span className="text-[11px] text-muted-foreground">상현고등학교 공식 스마트 인트라넷</span>
             <button
+              type="button"
               onClick={() => {
                 if (typeof window !== 'undefined') {
                   window.dispatchEvent(new CustomEvent('sanghyun-trigger-pwa-install'));
                 }
                 setIsMobileMenuOpen(false);
               }}
-              className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Download className="size-3.5" />
               앱 설치
