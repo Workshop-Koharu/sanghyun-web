@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Shield, User, LogOut, LogIn, School, BookOpen, Download } from 'lucide-react';
+import { Shield, User, LogOut, LogIn, School, BookOpen, Download, Menu, X, Camera, Users } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import SanghyunLogo from './SanghyunLogo';
 
@@ -18,6 +18,7 @@ interface UserSession {
 export default function Navbar() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -147,8 +148,81 @@ export default function Navbar() {
               로그인
             </a>
           )}
+
+          {/* Mobile Hamburger Toggle Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            aria-label="메뉴 열기"
+          >
+            {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-14 left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-border shadow-2xl p-4 space-y-2 animate-in slide-in-from-top-2">
+          <Link
+            href="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+          >
+            <School className="size-4 text-primary" />
+            학교 안내
+          </Link>
+          <Link
+            href="/dashboard"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+          >
+            <BookOpen className="size-4 text-primary" />
+            학생 포털 대시보드
+          </Link>
+          <Link
+            href="/dashboard?tab=insta"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+          >
+            <Camera className="size-4 text-rose-500" />
+            상현스타그램 피드
+          </Link>
+          <Link
+            href="/dashboard?tab=friends"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-accent transition-colors"
+          >
+            <Users className="size-4 text-indigo-400" />
+            학우·친구 시스템
+          </Link>
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-warning bg-warning/10 border border-warning/30 transition-colors"
+            >
+              <Shield className="size-4" />
+              교무실 관리자 콘솔
+            </Link>
+          )}
+
+          <div className="pt-2 border-t border-border/50 flex items-center justify-between">
+            <span className="text-[11px] text-muted-foreground">상현고등학교 공식 스마트 인트라넷</span>
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('sanghyun-trigger-pwa-install'));
+                }
+                setIsMobileMenuOpen(false);
+              }}
+              className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[11px] font-bold flex items-center gap-1"
+            >
+              <Download className="size-3" />
+              앱 설치
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

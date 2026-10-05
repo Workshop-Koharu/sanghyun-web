@@ -524,7 +524,7 @@ export default function DiscordSimulator() {
           </div>
 
           {/* Chat Messages Log */}
-          <div ref={scrollRef} className="h-[27rem] space-y-4 overflow-y-auto p-4 scrollbar-thin">
+          <div ref={scrollRef} className="h-[22rem] sm:h-[27rem] space-y-4 overflow-y-auto p-3.5 sm:p-4 scrollbar-thin">
             {chatEntries.length === 0 && !botTyping && (
               <div className="pt-24 text-center space-y-1">
                 <div className="w-10 h-10 rounded-full bg-[#383a40] text-white flex items-center justify-center mx-auto text-sm font-bold">

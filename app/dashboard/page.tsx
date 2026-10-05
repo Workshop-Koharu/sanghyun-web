@@ -10,6 +10,7 @@ import BellScheduleWidget from '@/components/BellScheduleWidget';
 import SuggestionsBoard from '@/components/SuggestionsBoard';
 import TimetableWidget from '@/components/TimetableWidget';
 import InstaFeedWidget from '@/components/InstaFeedWidget';
+import FriendsWidget from '@/components/FriendsWidget';
 import SanghyunLogo from '@/components/SanghyunLogo';
 import {
   BookOpen,
@@ -20,6 +21,7 @@ import {
   LogIn,
   AlertCircle,
   Users2,
+  Users,
   Bell,
   Sparkles,
   Edit3,
@@ -33,7 +35,7 @@ import {
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'insta' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
+    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'insta' | 'friends' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
   >('card');
   const [data, setData] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
@@ -256,6 +258,17 @@ export default function DashboardPage() {
           >
             <Camera className="w-3.5 h-3.5 text-rose-500" />
             상현스타
+          </button>
+          <button
+            onClick={() => setActiveTab('friends')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'friends'
+                ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-400" />
+            학우·친구
           </button>
           <button
             onClick={() => setActiveTab('suggestions')}
@@ -489,6 +502,11 @@ export default function DashboardPage() {
         {/* 상현스타그램 피드 */}
         {activeTab === 'insta' && (
           <InstaFeedWidget />
+        )}
+
+        {/* 상현고 학우·친구 시스템 */}
+        {activeTab === 'friends' && (
+          <FriendsWidget />
         )}
 
         {/* 1. 웹앱 학교 공식 공지사항 */}

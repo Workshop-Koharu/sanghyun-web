@@ -10,6 +10,21 @@ export async function GET(req: NextRequest) {
     const userId = session?.userId ? BigInt(session.userId) : BigInt(0);
 
     const { searchParams } = new URL(req.url);
+    const postIdParam = searchParams.get('postId');
+    if (postIdParam) {
+      const pid = parseInt(postIdParam, 10);
+      if (!isNaN(pid) && pid > 0) {
+        const comments = await query<any>(
+          `SELECT id, post_id, user_id, author_name, content, created_at
+           FROM insta_comments
+           WHERE post_id = $1
+           ORDER BY created_at ASC`,
+          [pid]
+        );
+        return NextResponse.json({ comments });
+      }
+    }
+
     const sort = searchParams.get('sort') || 'recent';
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10), 1), 50);
 
@@ -169,15 +184,19 @@ export async function POST(req: NextRequest) {
     // 3. New Instagram Post Upload
     const { imageUrl, caption, tags } = body;
     if (!imageUrl || typeof imageUrl !== 'string') {
-      return NextResponse.json({ error: '사진 이미지 URL을 입력해주세요.' }, { status: 400 });
+      return NextResponse.json({ error: '사진 이미지를 선택해주세요.' }, { status: 400 });
     }
 
     const cleanUrl = imageUrl.trim();
-    if (!cleanUrl.startsWith('https://') && !cleanUrl.startsWith('http://')) {
-      return NextResponse.json({ error: '올바른 웹 이미지 링크 (https://...)여야 합니다.' }, { status: 400 });
+    const isDataImage = cleanUrl.startsWith('data:image/');
+    const isHttpImage = cleanUrl.startsWith('https://') || cleanUrl.startsWith('http://');
+
+    if (!isDataImage && !isHttpImage) {
+      return NextResponse.json({ error: '올바른 이미지 파일 또는 웹 링크를 선택해주세요.' }, { status: 400 });
     }
-    if (cleanUrl.length > 1000) {
-      return NextResponse.json({ error: 'URL 길이가 너무 깁니다.' }, { status: 400 });
+    // Limit data URLs to ~6MB max
+    if (cleanUrl.length > 8000000) {
+      return NextResponse.json({ error: '이미지 파일 용량이 너무 큽니다. (최대 5MB)' }, { status: 400 });
     }
 
     const cleanCaption = (typeof caption === 'string' ? caption.trim() : '').slice(0, 1000);
