@@ -11,6 +11,7 @@ import SuggestionsBoard from '@/components/SuggestionsBoard';
 import TimetableWidget from '@/components/TimetableWidget';
 import InstaFeedWidget from '@/components/InstaFeedWidget';
 import FriendsWidget from '@/components/FriendsWidget';
+import DailyMealWidget from '@/components/DailyMealWidget';
 import SanghyunLogo from '@/components/SanghyunLogo';
 import {
   BookOpen,
@@ -371,30 +372,7 @@ export default function DashboardPage() {
       {/* 실시간 타종 시정표 & 오늘의 급식 메뉴 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BellScheduleWidget />
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-lg shrink-0">
-              🍱
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">오늘의 상현고 중식 식단</span>
-                <span className="text-[10px] font-mono text-slate-400 font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800">
-                  728 kcal
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
-                기장밥 · 얼큰소고기무국 · 수제등심돈까스 & 소스 · 콘치즈오븐구이 · 깍두기 · 유기농 사과주스
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
-            <span>식생활관 직영 위생 조리</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-              영양사 검수 완료
-            </span>
-          </div>
-        </div>
+        <DailyMealWidget />
       </div>
 
       {/* Main Tab Content */}

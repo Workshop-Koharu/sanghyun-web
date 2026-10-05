@@ -3,24 +3,14 @@
 import { useState } from 'react';
 import {
   BookOpen,
-  QrCode,
   RotateCw,
   Sparkles,
   Calendar,
   Award,
   CheckCircle2,
-  Clock,
-  Compass,
-  Heart,
-  Quote,
-  Download,
-  Smartphone,
   Share2,
   Check,
-  X,
-  ShieldCheck,
-  Wifi,
-  ExternalLink,
+  Quote,
 } from 'lucide-react';
 import SanghyunLogo from './SanghyunLogo';
 
@@ -202,7 +192,6 @@ function RealisticQRCode({ value, size = 52 }: { value: string; size?: number })
 
 export default function StudentCardView({ student, level, user, history = [] }: StudentProps) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [walletModalType, setWalletModalType] = useState<'apple' | 'google' | null>(null);
   const [walletCopied, setWalletCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -409,154 +398,41 @@ export default function StudentCardView({ student, level, user, history = [] }: 
         </div>
       </div>
 
-      {/* 454. Apple & Google Wallet Pass Export Action Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <button
-          onClick={() => setWalletModalType('apple')}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-black hover:bg-neutral-900 text-white text-xs font-bold shadow-md hover:shadow-lg transition active:scale-95 border border-white/20"
-        >
-          <span className="text-sm">🍎</span>
-          <span>Apple Wallet에 추가</span>
-        </button>
-        <button
-          onClick={() => setWalletModalType('google')}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1A73E8] hover:bg-[#1557B0] text-white text-xs font-bold shadow-md hover:shadow-lg transition active:scale-95"
-        >
-          <span className="text-sm">📱</span>
-          <span>Google Wallet에 추가</span>
-        </button>
-      </div>
-
-      {/* 454. Apple / Google Wallet Interactive Pass Modal */}
-      {walletModalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-5 text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{walletModalType === 'apple' ? '🍎' : '📱'}</span>
-                <div>
-                  <h3 className="text-sm font-bold text-white">
-                    {walletModalType === 'apple' ? 'Apple Wallet (애플 지갑) 패스' : 'Google Wallet (구글 지갑) 패스'}
-                  </h3>
-                  <p className="text-[10px] text-slate-400">
-                    스마트폰 잠금화면에서 바로 꺼내보는 모바일 공식 학생증
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setWalletModalType(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Simulated Apple Wallet Pass View */}
-            <div className="rounded-2xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-white/10 p-5 space-y-4 shadow-xl relative overflow-hidden">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                    상
-                  </div>
-                  <span className="text-xs font-extrabold tracking-wide text-slate-200">상현고등학교</span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono">
-                  <Wifi className="w-3 h-3 animate-pulse" />
-                  <span>NFC 단말기 태그 가능</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-mono block">학생 성명</span>
-                  <h4 className="text-lg font-black text-white tracking-tight">{student.real_name}</h4>
-                  <span className="text-[11px] text-blue-400 font-semibold">
-                    {student.grade}학년 {student.class_num}반 {student.student_num}번
-                  </span>
-                </div>
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={student.real_name}
-                    className="w-14 h-14 rounded-xl border border-white/20 object-cover shadow-sm"
-                  />
-                ) : (
-                  <div className="w-14 h-14 rounded-xl bg-blue-600/30 border border-white/20 flex items-center justify-center text-white font-black text-lg">
-                    {student.real_name.slice(0, 1)}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
-                <div>
-                  <span className="text-[10px] text-slate-400 block">학번</span>
-                  <span className="font-mono font-bold text-white">{student.student_id}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 block">소속 동아리</span>
-                  <span className="font-semibold text-slate-200 truncate block">
-                    {student.club_name || '미배정'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Barcode & QR Code Section */}
-              <div className="pt-3 border-t border-white/10 flex flex-col items-center gap-2">
-                <div className="p-2.5 rounded-xl bg-white flex items-center justify-center gap-3 w-full shadow-inner">
-                  <RealisticBarcode value={student.student_id} />
-                  <RealisticQRCode value={`https://sanghyun.koharu.live/student/${student.user_id}`} size={44} />
-                </div>
-                <span className="text-[9px] text-slate-400 font-mono tracking-wider">
-                  {student.student_id} • 상현고 공식 인증 PASS
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2 pt-1">
-              <a
-                href="/api/student/wallet-pass?download=1"
-                download={`sanghyun_student_${student.student_id}.pkpass`}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-lg transition active:scale-95"
-              >
-                <Download className="w-4 h-4" />
-                <span>Apple/Google 지갑 패스 파일 다운로드 (.pkpass)</span>
-              </a>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
-                >
-                  {walletCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{walletCopied ? '링크 복사 완료!' : '디지털 패스 링크 복사'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWalletModalType(null)}
-                  className="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
-                >
-                  닫기
-                </button>
-              </div>
-            </div>
-
-            {/* Usage Tip */}
-            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-slate-300 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-blue-400">
-                <ShieldCheck className="w-4 h-4" />
-                <span>잠금화면 지갑 사용 팁</span>
-              </div>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                다운로드한 <code className="text-blue-300 font-mono">.pkpass</code> 파일을 파일 앱 또는 Safari에서 열면
-                아이폰 지갑(Wallet) 앱에 등록됩니다. 아이폰 측면 전원 버튼을 두 번 누르면 잠금화면에서 바로 학생증이
-                꺼내져 급식실이나 교문 통과 시 바코드를 태그할 수 있습니다.
-              </p>
-            </div>
-          </div>
+      {/* Sleek Action Bar for 3D Digital Student Card */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsFlipped(!isFlipped)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+            <span>카드 뒤집기 ({isFlipped ? '앞면 보기' : '뒷면 바코드/QR'})</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass border border-border/60 hover:border-primary/40 text-foreground text-xs font-bold transition-all active:scale-[0.98]"
+          >
+            {walletCopied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400">링크 복사됨!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
+                <span>학생증 링크 공유</span>
+              </>
+            )}
+          </button>
         </div>
-      )}
+
+        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+          <Sparkles className="w-3 h-3 text-amber-500" />
+          <span>카드를 클릭하거나 터치하면 3D 홀로그램 앞뒷면이 부드럽게 회전합니다.</span>
+        </p>
+      </div>
 
       {/* 학적 이력 타임라인 (Timeline) */}
       <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
