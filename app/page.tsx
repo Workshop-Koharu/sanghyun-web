@@ -6,23 +6,23 @@ import {
   Landmark,
   ShieldCheck,
   Users,
-  ShoppingBag,
+  Camera,
   ArrowRight,
   Sparkles,
-  Award,
   Terminal,
   Clock,
   Compass,
 } from 'lucide-react';
+import DiscordSimulator from '@/components/DiscordSimulator';
 
 export default function Home() {
   return (
-    <div className="relative space-y-16 py-8">
-      {/* Hex background accent */}
-      <div className="hex-bg absolute -top-10 -left-10 w-[120%] h-[550px] pointer-events-none opacity-40 z-0" />
+    <div className="relative space-y-20 py-6">
+      {/* Subtle Hex Mesh Background Atmosphere */}
+      <div className="hex-bg absolute -top-12 -left-12 w-[125%] h-[600px] pointer-events-none opacity-30 z-0" />
 
       {/* Hero Section */}
-      <section className="relative z-10 text-center max-w-3xl mx-auto space-y-6 pt-6 pb-6">
+      <section className="relative z-10 text-center max-w-3xl mx-auto space-y-6 pt-4 pb-2">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass border border-white/10 text-xs text-foreground/90 font-medium shadow-sm transition-all hover:border-primary/50">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span className="tracking-wide">상현고등학교 공식 스마트 학사 인트라넷</span>
@@ -37,8 +37,8 @@ export default function Home() {
           </h1>
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            상현고등학교 재학생 및 교직원을 위한 프리미엄 학사 정보 플랫폼입니다. 디지털 학생증 발급, Latin Square 무충돌 시간표, 
-            출석 체크, 상현 은행 금융 서비스 및 동아리 활동을 실시간으로 확인하세요.
+            상현고등학교 학생과 교직원을 위한 종합 학사 정보 시스템입니다. 매일 등교 출석 체크,
+            Latin Square 100% 무충돌 시간표, 상현스타그램 일상 공유, 디지털 학생증 발급 및 상현 은행 금융 서비스를 원스톱으로 제공합니다.
           </p>
         </div>
 
@@ -60,18 +60,43 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Interactive Discord UI Simulator (Exactly from dash.jxayx.dev) */}
+      <section className="relative z-10 space-y-4">
+        <DiscordSimulator />
+      </section>
+
+      {/* Quick Metrics Bar */}
+      <section className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-5 rounded-2xl glass border border-border/50 text-center space-y-1 shadow-[var(--shadow-card)]">
+          <span className="text-2xl sm:text-3xl font-black text-foreground font-mono">10개 반</span>
+          <p className="text-xs text-muted-foreground">무충돌 정규 시간표 운영</p>
+        </div>
+        <div className="p-5 rounded-2xl glass border border-border/50 text-center space-y-1 shadow-[var(--shadow-card)]">
+          <span className="text-2xl sm:text-3xl font-black text-primary font-mono">50개</span>
+          <p className="text-xs text-muted-foreground">학생 성장 업적 및 칭호</p>
+        </div>
+        <div className="p-5 rounded-2xl glass border border-border/50 text-center space-y-1 shadow-[var(--shadow-card)]">
+          <span className="text-2xl sm:text-3xl font-black text-rose-500 font-mono">상현스타</span>
+          <p className="text-xs text-muted-foreground">실시간 사진 & 일상 피드</p>
+        </div>
+        <div className="p-5 rounded-2xl glass border border-border/50 text-center space-y-1 shadow-[var(--shadow-card)]">
+          <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">100%</span>
+          <p className="text-xs text-muted-foreground">NFC·바코드 디지털 학생증</p>
+        </div>
+      </section>
+
       {/* Core Services Grid */}
       <section className="relative z-10 space-y-6">
         <div className="flex items-center justify-between border-b border-border/40 pb-4">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <School className="w-5 h-5 text-primary" />
-              학사 포털 주요 서비스
+              학사 포털 핵심 기능
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">교내 활동 및 개인 학적을 관리하는 스마트 시스템</p>
+            <p className="text-xs text-muted-foreground mt-0.5">교내 활동 및 학생 생활을 지원하는 스마트 시스템</p>
           </div>
           <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-accent/60 text-muted-foreground border border-border/40">
-            10개 반 전용 시스템
+            상현고 공식 시스템
           </span>
         </div>
 
@@ -92,7 +117,17 @@ export default function Home() {
             </div>
             <h3 className="text-base font-bold text-foreground">Latin Square 무충돌 시간표</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              1반부터 10반까지 교사 중복 수업(1교시, 3교시 동시 수업 충돌)을 수학적 직교 라틴 방진 알고리즘으로 완전 해결하여 전 학급 100% 독립 수업을 제공합니다.
+              1반부터 10반까지 교사 중복 수업(1교시, 3교시 동시 수업 충돌)을 직교 라틴 방진 순열 알고리즘으로 해결하여 전 학급 100% 독립 수업을 보장합니다.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl glass border border-border/50 hover:border-primary/50 transition-all duration-200 space-y-3 group">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+              <Camera className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">상현스타그램 일상 피드</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              교내 일상, 축제, 동아리 활동, 점심시간 추억을 사진과 함께 공유하고 친구들과 좋아요 및 댓글로 소통하며 활동 코인을 적립받습니다.
             </p>
           </div>
 
@@ -123,16 +158,6 @@ export default function Home() {
             <h3 className="text-base font-bold text-foreground">동아리 개설 및 연합 활동</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               학우들과 다중 동아리를 자유롭게 창설하고 주간 활동 내역을 등록하여 학교 활동 보조금과 활동 인증 점수를 지원받습니다.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl glass border border-border/50 hover:border-primary/50 transition-all duration-200 space-y-3 group">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-foreground">학칙 준수 및 상벌점 시스템</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              교직원에 의해 상점과 벌점이 투명하게 기록되며, 누적 벌점 및 상벌 현황을 상시 확인할 수 있어 건전한 학교 문화를 지켜나갑니다.
             </p>
           </div>
         </div>
@@ -166,24 +191,24 @@ export default function Home() {
             <p className="text-[11px] text-muted-foreground font-sans mt-1">1~10반 1~7교시 무충돌 시간표</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
-            <span className="text-primary font-bold">/출석</span>
+            <span className="text-primary font-bold">/인스타 피드</span>
+            <p className="text-[11px] text-muted-foreground font-sans mt-1">상현스타 사진 피드 & 좋아요</p>
+          </div>
+          <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
+            <span className="text-primary font-bold">/출석 체크</span>
             <p className="text-[11px] text-muted-foreground font-sans mt-1">당일 출석 및 보상 수령</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
-            <span className="text-primary font-bold">/경제 지갑 & 은행</span>
-            <p className="text-[11px] text-muted-foreground font-sans mt-1">코인 잔액 조회 및 입출금</p>
+            <span className="text-primary font-bold">/경제 지갑</span>
+            <p className="text-[11px] text-muted-foreground font-sans mt-1">코인 잔액 조회 및 거래내역</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
             <span className="text-primary font-bold">/경제 주사위</span>
-            <p className="text-[11px] text-muted-foreground font-sans mt-1">액션 애니메이션 주사위 던지기</p>
+            <p className="text-[11px] text-muted-foreground font-sans mt-1">3D 액션 애니메이션 주사위 게임</p>
           </div>
           <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
-            <span className="text-primary font-bold">/동아리 개설</span>
-            <p className="text-[11px] text-muted-foreground font-sans mt-1">원클릭 창설 및 회원 모집</p>
-          </div>
-          <div className="p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/40 transition-colors">
-            <span className="text-primary font-bold">/상벌점 조회</span>
-            <p className="text-[11px] text-muted-foreground font-sans mt-1">누적 상벌점 내역 확인</p>
+            <span className="text-primary font-bold">/성장 업적</span>
+            <p className="text-[11px] text-muted-foreground font-sans mt-1">50개 학교 업적 페이지별 탐색</p>
           </div>
         </div>
       </section>

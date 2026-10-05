@@ -9,7 +9,7 @@ import AchievementsGrid from '@/components/AchievementsGrid';
 import BellScheduleWidget from '@/components/BellScheduleWidget';
 import SuggestionsBoard from '@/components/SuggestionsBoard';
 import TimetableWidget from '@/components/TimetableWidget';
-import MealPhotoFeedWidget from '@/components/MealPhotoFeedWidget';
+import InstaFeedWidget from '@/components/InstaFeedWidget';
 import {
   BookOpen,
   CalendarCheck,
@@ -27,12 +27,12 @@ import {
   Award,
   Calendar,
   MessageSquarePlus,
-  Utensils,
+  Camera,
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'meals' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
+    'card' | 'timetable' | 'attendance' | 'wallet' | 'club' | 'insta' | 'suggestions' | 'notices' | 'leaderboard' | 'discipline' | 'achievements'
   >('card');
   const [data, setData] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
@@ -246,15 +246,15 @@ export default function DashboardPage() {
             동아리
           </button>
           <button
-            onClick={() => setActiveTab('meals')}
+            onClick={() => setActiveTab('insta')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              activeTab === 'meals'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-semibold'
+              activeTab === 'insta'
+                ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Utensils className="w-3.5 h-3.5 text-amber-500" />
-            급식피드
+            <Camera className="w-3.5 h-3.5 text-rose-500" />
+            상현스타
           </button>
           <button
             onClick={() => setActiveTab('suggestions')}
@@ -485,9 +485,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* 453. 실시간 급식 메뉴 사진 피드 */}
-        {activeTab === 'meals' && (
-          <MealPhotoFeedWidget />
+        {/* 상현스타그램 피드 */}
+        {activeTab === 'insta' && (
+          <InstaFeedWidget />
         )}
 
         {/* 1. 웹앱 학교 공식 공지사항 */}

@@ -139,8 +139,16 @@ export async function POST(req: NextRequest) {
       [userId, authorName, grade, classNo, trimmedUrl, cleanComment, todayKST, mType, now]
     );
 
-    // Give reward bonus to student for contributing to meal feed
-    await query('UPDATE economics SET coins = coins + 20 WHERE user_id = $1', [userId]);
+    // Give reward bonus to student for contributing
+    await query(
+      `INSERT INTO wallets (user_id, balance, total_earned, total_spent, updated_at)
+       VALUES ($1, 20, 20, 0, $2)
+       ON CONFLICT (user_id) DO UPDATE SET
+           balance = wallets.balance + 20,
+           total_earned = wallets.total_earned + 20,
+           updated_at = $2`,
+      [userId, now]
+    );
 
     return NextResponse.json({
       success: true,
